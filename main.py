@@ -134,6 +134,7 @@ class MainWindow(QMainWindow):
   def to_copy_remote(self):
     QApplication.clipboard().setText(remote_repository)
     self.copy_remote.setText('Copied!')
+    QTimer.singleShot(1000, lambda: self.copy_remote.setText('Copy'))
 
   def browse_folder(self, ele):
     folder = QFileDialog.getExistingDirectory(self, 'Select Folder',
