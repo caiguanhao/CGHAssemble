@@ -3,13 +3,16 @@ import sys
 import subprocess
 import platform
 
+from dulwich.repo import Repo
+from dulwich.client import get_transport_and_path
+
 PLATFORM = platform.system()
 WINDOWS = PLATFORM == 'Windows'
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-remote_repository = 'https://github.com/choigoonho/maijie.git'
+remote_repository = 'https://github.com/caiguanhao/test.git'
 
 if getattr(sys, 'frozen', False):
   basedir = sys._MEIPASS # PyInstaller path
@@ -17,7 +20,8 @@ else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
 def path(path):
-  return QDir.toNativeSeparators(QDir(path).canonicalPath())
+  basename = QFileInfo(remote_repository).baseName()
+  return QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename)
 
 local_dir = path(basedir)
 
@@ -49,6 +53,22 @@ def update_remote(label):
 
 def update_local(label):
   update_label(label, local_dir, 'file:///' + local_dir)
+
+def clone():
+  client, host_path = get_transport_and_path(str(remote_repository))
+
+  repo = Repo.init(str(local_dir), mkdir=True)
+
+  remote_refs = client.fetch(host_path, repo,
+    determine_wants=repo.object_store.determine_wants_all,
+    progress=lambda (text): console.append(text))
+
+  repo["HEAD"] = remote_refs["HEAD"]
+
+  repo._build_tree()
+
+def to_pull():
+  clone()
 
 app = QApplication([])
 app.setApplicationName('CGHAssemble')
@@ -97,6 +117,7 @@ button_grid = QGridLayout()
 grid.addLayout(button_grid, 3, 0, 1, 3)
 
 pull = QPushButton('Download/Update')
+pull.clicked.connect(to_pull)
 button_grid.addWidget(pull, 0, 0)
 
 preview = QPushButton('Preview')
