@@ -81,6 +81,8 @@ class MainWindow(QMainWindow):
     self.setup_ui()
 
   def setup_ui(self):
+    self.buttons = []
+
     grid = QGridLayout()
 
     # the middle column expands
@@ -98,6 +100,7 @@ class MainWindow(QMainWindow):
     copy_remote.clicked.connect(lambda: to_copy_remote(copy_remote))
     copy_remote.setFocusPolicy(Qt.NoFocus)
     grid.addWidget(copy_remote, 0, 2)
+    self.buttons.append(copy_remote)
 
     dest = QLabel('Local')
     grid.addWidget(dest, 1, 0)
@@ -111,6 +114,7 @@ class MainWindow(QMainWindow):
     select_local.clicked.connect(lambda: find_folder(main, local))
     select_local.setFocusPolicy(Qt.NoFocus)
     grid.addWidget(select_local, 1, 2)
+    self.buttons.append(select_local)
 
     self.console = QTextEdit()
     self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
@@ -124,12 +128,15 @@ class MainWindow(QMainWindow):
     self.pull = QPushButton('Download/Update')
     self.pull.clicked.connect(self.pull_clicked)
     button_grid.addWidget(self.pull, 0, 0)
+    self.buttons.append(self.pull)
 
     preview = QPushButton('Preview')
     button_grid.addWidget(preview, 0, 1)
+    self.buttons.append(preview)
 
     assemble = QPushButton('Assemble')
     button_grid.addWidget(assemble, 0, 2)
+    self.buttons.append(assemble)
 
     frame = QFrame()
     frame.setLayout(grid)
@@ -137,14 +144,30 @@ class MainWindow(QMainWindow):
 
   def console_append(self, content):
     self.console.append(str(content))
-    self.console.ensureCursorVisible()
+    self.console.moveCursor(QTextCursor.End)
+
+  def freeze_buttons(self):
+    for index, button in enumerate(self.buttons):
+      button.setEnabled(False)
+
+  def unfreeze_buttons(self):
+    for index, button in enumerate(self.buttons):
+      button.setEnabled(True)
+
+  def clone_begin(self):
+    self.pull.setText('Processing...')
+    self.freeze_buttons()
+
+  def clone_finish(self):
+    self.pull.setText('Download/Update')
+    self.unfreeze_buttons()
 
   def pull_clicked(self):
     clone = Clone(self)
     clone.progress.connect(self.console_append)
-    clone.begin.connect(lambda: self.pull.setText('Processing...'))
-    clone.finish.connect(lambda: self.pull.setText('Download/Update'))
     clone.error.connect(self.console_append)
+    clone.begin.connect(self.clone_begin)
+    clone.finish.connect(self.clone_finish)
     clone.start()
 
 if __name__ == '__main__':
