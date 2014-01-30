@@ -19,6 +19,9 @@ if getattr(sys, 'frozen', False):
 else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
+def path(*args):
+  return QDir.toNativeSeparators(str(QDir.separator()).join(args))
+
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -34,12 +37,18 @@ class Clone(QThread):
     self.begin.emit()
     try:
       client, host_path = get_transport_and_path(str(self.remote))
-      repo = Repo.init(str(self.local), mkdir=True)
+
+      if QFile.exists(path(str(self.local), '.git')):
+        repo = Repo(str(self.local))
+      else:
+        repo = Repo.init(str(self.local), mkdir=True)
+
       remote_refs = client.fetch(host_path, repo,
         determine_wants=repo.object_store.determine_wants_all,
         progress=self.progress.emit)
       repo["HEAD"] = remote_refs["HEAD"]
       repo._build_tree()
+      self.progress.emit("Up-to-date.\n")
     except Exception as error:
       self.error.emit(error)
     finally:
