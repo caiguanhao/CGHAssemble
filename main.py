@@ -41,12 +41,12 @@ class Clone(QThread):
   def run(self):
     self.begin.emit()
     try:
-      client, host_path = get_transport_and_path(str(self.remote))
+      client, host_path = get_transport_and_path(self.remote)
 
-      if QFile.exists(path(str(self.local), '.git')):
-        repo = Repo(str(self.local))
+      if QFile.exists(os.path.join(self.local, '.git')):
+        repo = Repo(self.local)
       else:
-        repo = Repo.init(str(self.local), mkdir=True)
+        repo = Repo.init(self.local, mkdir=True)
 
       remote_refs = client.fetch(host_path, repo,
         determine_wants=repo.object_store.determine_wants_all,
@@ -140,11 +140,7 @@ class MainWindow(QMainWindow):
     self.console.setReadOnly(True)
     self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }");
-    self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
-    self.console.setFontPointSize(10)
-    if WINDOWS:
-      self.console.setFontPointSize(8)
-    self.console.setText('Ready.')
+    self.console_append_plain('Ready.')
     grid.addWidget(self.console, 2, 0, 1, 3)
 
     button_grid = QGridLayout()
@@ -203,6 +199,13 @@ class MainWindow(QMainWindow):
   def console_clear(self):
     self.console.clear()
 
+  def console_append_plain(self, content):
+    self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
+    self.console.setFontPointSize(10)
+    if WINDOWS:
+      self.console.setFontPointSize(8)
+    self.console.append(str(content))
+
   def console_append(self, content):
     self.console.append(str(content))
     self.console.moveCursor(QTextCursor.End)
@@ -227,8 +230,8 @@ class MainWindow(QMainWindow):
   def pull_clicked(self):
     self.console_clear()
     clone = Clone(self, remote_repository, self.local_dir)
-    clone.progress.connect(self.console_append)
-    clone.error.connect(self.console_append)
+    clone.progress.connect(self.console_append_plain)
+    clone.error.connect(self.console_append_plain)
     clone.begin.connect(self.clone_begin)
     clone.finish.connect(self.clone_finish)
     clone.start()
