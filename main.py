@@ -3,14 +3,14 @@ import sys
 import subprocess
 import platform
 
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 from dulwich.repo import Repo
 from dulwich.client import get_transport_and_path
 
 PLATFORM = platform.system()
 WINDOWS = PLATFORM == 'Windows'
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 remote_repository = 'https://github.com/caiguanhao/test.git'
 
@@ -19,47 +19,22 @@ if getattr(sys, 'frozen', False):
 else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
-def path(path):
-  basename = QFileInfo(remote_repository).baseName()
-  return QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename)
-
-local_dir = path(basedir)
-
-def to_copy_remote(button):
-  QApplication.clipboard().setText(remote_repository)
-  button.setText('Copied!')
-
-def find_folder(ref, ele):
-  folder = QFileDialog.getExistingDirectory(ref, 'Select Folder', remote_repository, QFileDialog.ShowDirsOnly)
-  if not folder: return
-  global local_dir
-  local_dir = path(folder)
-  update_local(ele)
-
-def update_label(label, text, url):
-  elided_text = QFontMetrics(label.font()).elidedText(text, Qt.ElideMiddle, label.width());
-  label.setText('<a href="' + url + '">' + elided_text + '</a>');
-
-def update_remote(label):
-  update_label(label, remote_repository, remote_repository)
-
-def update_local(label):
-  update_label(label, local_dir, 'file:///' + local_dir)
-
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
   error = pyqtSignal(object)
   progress = pyqtSignal(str)
 
-  def __init__(self, parent):
+  def __init__(self, parent, remote, local):
     QThread.__init__(self, parent)
+    self.remote = remote
+    self.local = local
 
   def run(self):
     self.begin.emit()
     try:
-      client, host_path = get_transport_and_path(str(remote_repository))
-      repo = Repo.init(str(local_dir), mkdir=True)
+      client, host_path = get_transport_and_path(str(self.remote))
+      repo = Repo.init(str(self.local), mkdir=True)
       remote_refs = client.fetch(host_path, repo,
         determine_wants=repo.object_store.determine_wants_all,
         progress=self.progress.emit)
@@ -78,6 +53,7 @@ class MainWindow(QMainWindow):
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
     self.setWindowTitle('CGHAssemble')
+    self.local_dir = self.path(basedir)
     self.setup_ui()
 
   def setup_ui(self):
@@ -91,27 +67,27 @@ class MainWindow(QMainWindow):
     source = QLabel('Source')
     grid.addWidget(source, 0, 0)
 
-    remote = QLabel()
-    update_remote(remote)
-    remote.setOpenExternalLinks(True)
-    grid.addWidget(remote, 0, 1)
+    self.remote = QLabel()
+    self.remote.setOpenExternalLinks(True)
+    grid.addWidget(self.remote, 0, 1)
+    self.update_remote()
 
-    copy_remote = QPushButton('Copy')
-    copy_remote.clicked.connect(lambda: to_copy_remote(copy_remote))
-    copy_remote.setFocusPolicy(Qt.NoFocus)
-    grid.addWidget(copy_remote, 0, 2)
-    self.buttons.append(copy_remote)
+    self.copy_remote = QPushButton('Copy')
+    self.copy_remote.clicked.connect(self.to_copy_remote)
+    self.copy_remote.setFocusPolicy(Qt.NoFocus)
+    grid.addWidget(self.copy_remote, 0, 2)
+    self.buttons.append(self.copy_remote)
 
     dest = QLabel('Local')
     grid.addWidget(dest, 1, 0)
 
-    local = QLabel()
-    update_local(local)
-    local.setOpenExternalLinks(True)
-    grid.addWidget(local, 1, 1)
+    self.local = QLabel()
+    self.local.setOpenExternalLinks(True)
+    grid.addWidget(self.local, 1, 1)
+    self.update_local()
 
     select_local = QPushButton('Browse...')
-    select_local.clicked.connect(lambda: find_folder(main, local))
+    select_local.clicked.connect(self.browse_folder)
     select_local.setFocusPolicy(Qt.NoFocus)
     grid.addWidget(select_local, 1, 2)
     self.buttons.append(select_local)
@@ -142,6 +118,34 @@ class MainWindow(QMainWindow):
     frame.setLayout(grid)
     self.setCentralWidget(frame)
 
+  def path(self, path):
+    basename = QFileInfo(remote_repository).baseName()
+    return QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename)
+
+  def to_copy_remote(self):
+    QApplication.clipboard().setText(remote_repository)
+    self.copy_remote.setText('Copied!')
+
+  def browse_folder(self, ele):
+    folder = QFileDialog.getExistingDirectory(self, 'Select Folder',
+      remote_repository, QFileDialog.ShowDirsOnly)
+    if not folder: return
+    self.local_dir = self.path(folder)
+    self.update_local()
+
+  def update_label(self, label, text, url):
+    elided_text = QFontMetrics(label.font()).elidedText(text, Qt.ElideMiddle, label.width());
+    label.setText('<a href="' + url + '">' + elided_text + '</a>');
+
+  def update_remote(self):
+    self.update_label(self.remote, remote_repository, remote_repository)
+
+  def update_local(self):
+    self.update_label(self.local, self.local_dir, 'file:///' + self.local_dir)
+
+  def console_clear(self):
+    self.console.clear()
+
   def console_append(self, content):
     self.console.append(str(content))
     self.console.moveCursor(QTextCursor.End)
@@ -163,7 +167,8 @@ class MainWindow(QMainWindow):
     self.unfreeze_buttons()
 
   def pull_clicked(self):
-    clone = Clone(self)
+    self.console_clear()
+    clone = Clone(self, remote_repository, self.local_dir)
     clone.progress.connect(self.console_append)
     clone.error.connect(self.console_append)
     clone.begin.connect(self.clone_begin)
