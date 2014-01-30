@@ -80,6 +80,24 @@ select_local.clicked.connect(lambda: find_folder(main, local))
 select_local.setFocusPolicy(Qt.NoFocus)
 grid.addWidget(select_local, 1, 2)
 
+console = QTextEdit()
+console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
+console.setFontPointSize(10)
+console.setText('Ready.')
+grid.addWidget(console, 2, 0, 1, 3)
+
+button_grid = QGridLayout()
+grid.addLayout(button_grid, 3, 0, 1, 3)
+
+pull = QPushButton('Download/Update')
+button_grid.addWidget(pull, 0, 0)
+
+preview = QPushButton('Preview')
+button_grid.addWidget(preview, 0, 1)
+
+assemble = QPushButton('Assemble')
+button_grid.addWidget(assemble, 0, 2)
+
 frame = QFrame()
 frame.setLayout(grid)
 
