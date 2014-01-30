@@ -56,18 +56,23 @@ class Clone(QThread):
       self.finish.emit()
 
 class Node(QThread):
+  begin = pyqtSignal()
+  finish = pyqtSignal()
   progress = pyqtSignal(str)
+  error = pyqtSignal(object)
 
-  def __init__(self, parent, local):
+  def __init__(self, parent, local, commands):
     QThread.__init__(self, parent)
     self.local = local
+    self.commands = commands
 
   def run(self):
+    self.begin.emit()
     nodeprocess = None
     try:
       env = os.environ.copy()
-      nodeprocess = subprocess.Popen([ NODE, GRUNT ], cwd=self.local,
-        env=env, stdout=subprocess.PIPE)
+      nodeprocess = subprocess.Popen([ NODE ] + self.commands, cwd=self.local,
+        env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       while True:
         line = nodeprocess.stdout.readline()
         if line != '':
@@ -76,6 +81,8 @@ class Node(QThread):
           break
     except Exception as error:
       self.error.emit(error)
+    finally:
+      self.finish.emit()
 
 class MainWindow(QMainWindow):
   def __init__(self):
@@ -140,13 +147,18 @@ class MainWindow(QMainWindow):
     button_grid.addWidget(self.pull, 0, 0)
     self.buttons.append(self.pull)
 
+    self.install = QPushButton('Install')
+    self.install.clicked.connect(self.install_clicked)
+    button_grid.addWidget(self.install, 0, 1)
+    self.buttons.append(self.install)
+
     self.preview = QPushButton('Preview')
     self.preview.clicked.connect(self.preview_clicked)
-    button_grid.addWidget(self.preview, 0, 1)
+    button_grid.addWidget(self.preview, 0, 2)
     self.buttons.append(self.preview)
 
     assemble = QPushButton('Assemble')
-    button_grid.addWidget(assemble, 0, 2)
+    button_grid.addWidget(assemble, 0, 3)
     self.buttons.append(assemble)
 
     frame = QFrame()
@@ -211,9 +223,32 @@ class MainWindow(QMainWindow):
     clone.finish.connect(self.clone_finish)
     clone.start()
 
-  def preview_clicked(self):
-    node = Node(self, self.local_dir)
+  def install_begin(self):
+    self.install.setText('Processing...')
+    self.freeze_buttons()
+
+  def install_finish(self):
+    self.install.setText('Install')
+    self.unfreeze_buttons()
+
+  def install_clicked(self):
+    if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
+      QMessageBox.warning(self, "Error", "The package.json file is not " +
+        "found in local directory. Nothing to install.")
+      return
+    self.console_clear()
+    node = Node(self, self.local_dir, [ NPM, "install" ])
     node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
+    node.begin.connect(self.install_begin)
+    node.finish.connect(self.install_finish)
+    node.start()
+
+  def preview_clicked(self):
+    self.console_clear()
+    node = Node(self, self.local_dir, [ GRUNT ])
+    node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
     node.start()
 
 if __name__ == '__main__':
