@@ -1,6 +1,10 @@
 import os
 import sys
 import subprocess
+import platform
+
+PLATFORM = platform.system()
+WINDOWS = PLATFORM == 'Windows'
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -12,7 +16,10 @@ if getattr(sys, 'frozen', False):
 else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
-local_dir = basedir
+def path(path):
+  return QDir.toNativeSeparators(QDir(path).canonicalPath())
+
+local_dir = path(basedir)
 
 class MainWindow(QMainWindow):
   def __init__(self):
@@ -30,7 +37,7 @@ def find_folder(ref, ele):
   folder = QFileDialog.getExistingDirectory(ref, 'Select Folder', remote_repository, QFileDialog.ShowDirsOnly)
   if not folder: return
   global local_dir
-  local_dir = folder
+  local_dir = path(folder)
   update_local(ele)
 
 def update_label(label, text, url):
@@ -41,7 +48,7 @@ def update_remote(label):
   update_label(label, remote_repository, remote_repository)
 
 def update_local(label):
-  update_label(label, local_dir, 'file://' + local_dir)
+  update_label(label, local_dir, 'file:///' + local_dir)
 
 app = QApplication([])
 app.setApplicationName('CGHAssemble')
