@@ -25,14 +25,6 @@ def path(path):
 
 local_dir = path(basedir)
 
-class MainWindow(QMainWindow):
-  def __init__(self):
-    QMainWindow.__init__(self);
-    width = 500
-    height = 200
-    self.resize(width, height)
-    self.move((QApplication.desktop().width() - width) / 2, 100)
-
 def to_copy_remote(button):
   QApplication.clipboard().setText(remote_repository)
   button.setText('Copied!')
@@ -54,82 +46,97 @@ def update_remote(label):
 def update_local(label):
   update_label(label, local_dir, 'file:///' + local_dir)
 
-def clone():
-  client, host_path = get_transport_and_path(str(remote_repository))
+class MyThread(QThread):
+  progress = pyqtSignal(str)
 
-  repo = Repo.init(str(local_dir), mkdir=True)
+  def __init__(self, parent):
+    QThread.__init__(self, parent)
 
-  remote_refs = client.fetch(host_path, repo,
-    determine_wants=repo.object_store.determine_wants_all,
-    progress=lambda (text): console.append(text))
+  def run(self):
+    client, host_path = get_transport_and_path(str(remote_repository))
+    repo = Repo.init(str(local_dir), mkdir=True)
+    remote_refs = client.fetch(host_path, repo,
+      determine_wants=repo.object_store.determine_wants_all,
+      progress=self.progress.emit)
+    repo["HEAD"] = remote_refs["HEAD"]
+    repo._build_tree()
 
-  repo["HEAD"] = remote_refs["HEAD"]
+class MainWindow(QMainWindow):
+  def __init__(self):
+    QMainWindow.__init__(self);
+    width = 500
+    height = 200
+    self.resize(width, height)
+    self.move((QApplication.desktop().width() - width) / 2, 100)
+    self.setWindowTitle('CGHAssemble')
+    self.setup_ui()
 
-  repo._build_tree()
+  def setup_ui(self):
+    grid = QGridLayout()
 
-def to_pull():
-  clone()
+    # the middle column expands
+    grid.setColumnStretch(1, 10);
 
-app = QApplication([])
-app.setApplicationName('CGHAssemble')
+    source = QLabel('Source')
+    grid.addWidget(source, 0, 0)
 
-main = MainWindow()
-main.setWindowTitle('CGHAssemble')
+    remote = QLabel()
+    update_remote(remote)
+    remote.setOpenExternalLinks(True)
+    grid.addWidget(remote, 0, 1)
 
-grid = QGridLayout()
+    copy_remote = QPushButton('Copy')
+    copy_remote.clicked.connect(lambda: to_copy_remote(copy_remote))
+    copy_remote.setFocusPolicy(Qt.NoFocus)
+    grid.addWidget(copy_remote, 0, 2)
 
-# the middle column expands
-grid.setColumnStretch(1, 10);
+    dest = QLabel('Local')
+    grid.addWidget(dest, 1, 0)
 
-source = QLabel('Source')
-grid.addWidget(source, 0, 0)
+    local = QLabel()
+    update_local(local)
+    local.setOpenExternalLinks(True)
+    grid.addWidget(local, 1, 1)
 
-remote = QLabel()
-update_remote(remote)
-remote.setOpenExternalLinks(True)
-grid.addWidget(remote, 0, 1)
+    select_local = QPushButton('Browse...')
+    select_local.clicked.connect(lambda: find_folder(main, local))
+    select_local.setFocusPolicy(Qt.NoFocus)
+    grid.addWidget(select_local, 1, 2)
 
-copy_remote = QPushButton('Copy')
-copy_remote.clicked.connect(lambda: to_copy_remote(copy_remote))
-copy_remote.setFocusPolicy(Qt.NoFocus)
-grid.addWidget(copy_remote, 0, 2)
+    self.console = QTextEdit()
+    self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
+    self.console.setFontPointSize(10)
+    self.console.setText('Ready.')
+    grid.addWidget(self.console, 2, 0, 1, 3)
 
-dest = QLabel('Local')
-grid.addWidget(dest, 1, 0)
+    button_grid = QGridLayout()
+    grid.addLayout(button_grid, 3, 0, 1, 3)
 
-local = QLabel()
-update_local(local)
-local.setOpenExternalLinks(True)
-grid.addWidget(local, 1, 1)
+    pull = QPushButton('Download/Update')
+    pull.clicked.connect(self.pull_clicked)
+    button_grid.addWidget(pull, 0, 0)
 
-select_local = QPushButton('Browse...')
-select_local.clicked.connect(lambda: find_folder(main, local))
-select_local.setFocusPolicy(Qt.NoFocus)
-grid.addWidget(select_local, 1, 2)
+    preview = QPushButton('Preview')
+    button_grid.addWidget(preview, 0, 1)
 
-console = QTextEdit()
-console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
-console.setFontPointSize(10)
-console.setText('Ready.')
-grid.addWidget(console, 2, 0, 1, 3)
+    assemble = QPushButton('Assemble')
+    button_grid.addWidget(assemble, 0, 2)
 
-button_grid = QGridLayout()
-grid.addLayout(button_grid, 3, 0, 1, 3)
+    frame = QFrame()
+    frame.setLayout(grid)
+    self.setCentralWidget(frame)
 
-pull = QPushButton('Download/Update')
-pull.clicked.connect(to_pull)
-button_grid.addWidget(pull, 0, 0)
+  def console_append(self, text):
+    self.console.append(text)
 
-preview = QPushButton('Preview')
-button_grid.addWidget(preview, 0, 1)
+  def pull_clicked(self):
+    thread = MyThread(self)
+    thread.progress.connect(self.console_append)
+    thread.start()
 
-assemble = QPushButton('Assemble')
-button_grid.addWidget(assemble, 0, 2)
-
-frame = QFrame()
-frame.setLayout(grid)
-
-main.setCentralWidget(frame)
-main.show()
-
-app.exec_()
+if __name__ == '__main__':
+  app = QApplication(sys.argv)
+  app.setApplicationName('CGHAssemble')
+  main = MainWindow()
+  main.show()
+  sys.exit(app.exec_())
