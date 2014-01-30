@@ -1,0 +1,7 @@
+node_modules
+npm
+grunt-cli
+*.tgz
+*.zip
+*.tar.gz
+*.exe
