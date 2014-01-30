@@ -25,6 +25,8 @@ NODE = os.path.join(basedir, "node.exe")
 NPM = os.path.join(basedir, "npm", "cli.js")
 GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
 
+CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
+
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -78,7 +80,7 @@ class Node(QThread):
       while True:
         line = nodeprocess.stdout.readline()
         if line != '':
-          line = Ansi2HTMLConverter().convert(line.rstrip())
+          line = CONVERTER.convert(line.rstrip())
           self.progress.emit(line)
         else:
           break
@@ -137,8 +139,7 @@ class MainWindow(QMainWindow):
     self.console = QTextEdit()
     self.console.setReadOnly(True)
     self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    self.console.setFrameStyle(QFrame.NoFrame)
-    self.console.setStyleSheet("QTextEdit { background: #000; color: #fff }");
+    self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }");
     self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
     self.console.setFontPointSize(10)
     if WINDOWS:
