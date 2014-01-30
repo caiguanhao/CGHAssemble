@@ -4,7 +4,10 @@ set +e
 
 NODE_VER="v0.10.25"
 NODE_DIST="http://nodejs.org/dist/${NODE_VER}"
-NODE_DIR="node"
+
+NPM_VER="1.3.25"
+NPM_FILE="npm-${NPM_VER}.tgz"
+NPM_DIST="http://nodejs.org/dist/npm/${NPM_FILE}"
 
 if [ "$OS" = "Windows_NT" ]; then
   PLATFORM="win"
@@ -93,18 +96,15 @@ case "$PLATFORM-$ARCH" in
     ;;
 esac
 
+DOWNLOAD="$(which curl) -# -C - -L -o temp"
+if [ -z "$DOWNLOAD" ]; then
+  DOWNLOAD="$(which wget) --continue -O temp"
+fi
+
 if [ ! -f "$NODE_FILE" ]; then
-  DOWNLOAD="$(which curl) -# -C - -L -o temp"
-  if [ -z "$DOWNLOAD" ]; then
-    DOWNLOAD="$(which wget) --continue -O temp"
-  fi
   echo Downloading $NODE_DIST ...
   $DOWNLOAD $NODE_DIST
   mv "temp" "$NODE_FILE"
-fi
-
-if [ ! -d "$NODE_DIR" ]; then
-  mkdir "$NODE_DIR"
 fi
 
 if [ ! -z "$NODE_TAR_GZ" ]; then
@@ -112,17 +112,27 @@ if [ ! -z "$NODE_TAR_GZ" ]; then
   echo "Extracting archive..."
   tar xfvz "$NODE_TAR_GZ" > /dev/null
 
-  echo "Copying ${NODE_TAR_GZ%.*.*}/bin/node to node/node.exe..."
-  cp "${NODE_TAR_GZ%.*.*}/bin/node" "node/node.exe"
+  echo "Copying ${NODE_TAR_GZ%.*.*}/bin/node to node.exe..."
+  cp "${NODE_TAR_GZ%.*.*}/bin/node" "node.exe"
 
   echo "Remove ${NODE_TAR_GZ%.*.*}..."
   rm -rf "${NODE_TAR_GZ%.*.*}"
 
-else
+fi
 
-  echo "Copying ${NODE_FILE} node/node.exe..."
-  cp "${NODE_FILE}" "node/node.exe"
+if [ ! -d "npm" ]; then
+  if [ ! -f "$NPM_FILE" ]; then
+    echo Downloading $NPM_DIST ...
+    $DOWNLOAD $NPM_DIST
+    mv "temp" "$NPM_FILE"
+  fi
+  tar xfvz "$NPM_FILE" > /dev/null
+fi
 
+if [ ! -d "grunt-cli" ]; then
+  "./node.exe" "npm/cli.js" install grunt-cli
+  mv "node_modules/grunt-cli" .
+  rmdir "node_modules"
 fi
 
 echo "Done."
