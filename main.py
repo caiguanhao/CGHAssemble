@@ -46,20 +46,29 @@ def update_remote(label):
 def update_local(label):
   update_label(label, local_dir, 'file:///' + local_dir)
 
-class MyThread(QThread):
+class Clone(QThread):
+  begin = pyqtSignal()
+  finish = pyqtSignal()
+  error = pyqtSignal(object)
   progress = pyqtSignal(str)
 
   def __init__(self, parent):
     QThread.__init__(self, parent)
 
   def run(self):
-    client, host_path = get_transport_and_path(str(remote_repository))
-    repo = Repo.init(str(local_dir), mkdir=True)
-    remote_refs = client.fetch(host_path, repo,
-      determine_wants=repo.object_store.determine_wants_all,
-      progress=self.progress.emit)
-    repo["HEAD"] = remote_refs["HEAD"]
-    repo._build_tree()
+    self.begin.emit()
+    try:
+      client, host_path = get_transport_and_path(str(remote_repository))
+      repo = Repo.init(str(local_dir), mkdir=True)
+      remote_refs = client.fetch(host_path, repo,
+        determine_wants=repo.object_store.determine_wants_all,
+        progress=self.progress.emit)
+      repo["HEAD"] = remote_refs["HEAD"]
+      repo._build_tree()
+    except Exception as error:
+      self.error.emit(error)
+    finally:
+      self.finish.emit()
 
 class MainWindow(QMainWindow):
   def __init__(self):
@@ -112,9 +121,9 @@ class MainWindow(QMainWindow):
     button_grid = QGridLayout()
     grid.addLayout(button_grid, 3, 0, 1, 3)
 
-    pull = QPushButton('Download/Update')
-    pull.clicked.connect(self.pull_clicked)
-    button_grid.addWidget(pull, 0, 0)
+    self.pull = QPushButton('Download/Update')
+    self.pull.clicked.connect(self.pull_clicked)
+    button_grid.addWidget(self.pull, 0, 0)
 
     preview = QPushButton('Preview')
     button_grid.addWidget(preview, 0, 1)
@@ -126,13 +135,17 @@ class MainWindow(QMainWindow):
     frame.setLayout(grid)
     self.setCentralWidget(frame)
 
-  def console_append(self, text):
-    self.console.append(text)
+  def console_append(self, content):
+    self.console.append(str(content))
+    self.console.ensureCursorVisible()
 
   def pull_clicked(self):
-    thread = MyThread(self)
-    thread.progress.connect(self.console_append)
-    thread.start()
+    clone = Clone(self)
+    clone.progress.connect(self.console_append)
+    clone.begin.connect(lambda: self.pull.setText('Processing...'))
+    clone.finish.connect(lambda: self.pull.setText('Download/Update'))
+    clone.error.connect(self.console_append)
+    clone.start()
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
