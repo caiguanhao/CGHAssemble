@@ -12,10 +12,12 @@ if getattr(sys, 'frozen', False):
 else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
+local_dir = basedir
+
 class MainWindow(QMainWindow):
   def __init__(self):
     QMainWindow.__init__(self);
-    width = 400
+    width = 500
     height = 200
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
@@ -24,10 +26,22 @@ def to_copy_remote(button):
   QApplication.clipboard().setText(remote_repository)
   button.setText('Copied!')
 
-def find_folder(ref):
+def find_folder(ref, ele):
   folder = QFileDialog.getExistingDirectory(ref, 'Select Folder', remote_repository, QFileDialog.ShowDirsOnly)
-  if folder:
-    print folder
+  if not folder: return
+  global local_dir
+  local_dir = folder
+  update_local(ele)
+
+def update_label(label, text, url):
+  elided_text = QFontMetrics(label.font()).elidedText(text, Qt.ElideMiddle, label.width());
+  label.setText('<a href="' + url + '">' + elided_text + '</a>');
+
+def update_remote(label):
+  update_label(label, remote_repository, remote_repository)
+
+def update_local(label):
+  update_label(label, local_dir, 'file://' + local_dir)
 
 app = QApplication([])
 app.setApplicationName('CGHAssemble')
@@ -37,26 +51,33 @@ main.setWindowTitle('CGHAssemble')
 
 grid = QGridLayout()
 
+# the middle column expands
+grid.setColumnStretch(1, 10);
+
 source = QLabel('Source')
 grid.addWidget(source, 0, 0)
 
-remote = QLabel('<a href="' + remote_repository + '">' + remote_repository + '</a>')
+remote = QLabel()
+update_remote(remote)
 remote.setOpenExternalLinks(True)
 grid.addWidget(remote, 0, 1)
 
 copy_remote = QPushButton('Copy')
 copy_remote.clicked.connect(lambda: to_copy_remote(copy_remote))
+copy_remote.setFocusPolicy(Qt.NoFocus)
 grid.addWidget(copy_remote, 0, 2)
 
 dest = QLabel('Local')
 grid.addWidget(dest, 1, 0)
 
-local = QLabel('<a href="file://' + basedir + '">' + basedir + '</a>')
+local = QLabel()
+update_local(local)
 local.setOpenExternalLinks(True)
 grid.addWidget(local, 1, 1)
 
 select_local = QPushButton('Browse...')
-select_local.clicked.connect(lambda: find_folder(main))
+select_local.clicked.connect(lambda: find_folder(main, local))
+select_local.setFocusPolicy(Qt.NoFocus)
 grid.addWidget(select_local, 1, 2)
 
 frame = QFrame()
