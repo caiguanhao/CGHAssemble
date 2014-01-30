@@ -157,9 +157,10 @@ class MainWindow(QMainWindow):
     button_grid.addWidget(self.preview, 0, 2)
     self.buttons.append(self.preview)
 
-    assemble = QPushButton('Assemble')
-    button_grid.addWidget(assemble, 0, 3)
-    self.buttons.append(assemble)
+    self.assemble = QPushButton('Assemble')
+    self.assemble.clicked.connect(self.assemble_clicked)
+    button_grid.addWidget(self.assemble, 0, 3)
+    self.buttons.append(self.assemble)
 
     frame = QFrame()
     frame.setLayout(grid)
@@ -249,6 +250,23 @@ class MainWindow(QMainWindow):
     node = Node(self, self.local_dir, [ GRUNT ])
     node.progress.connect(self.console_append)
     node.error.connect(self.console_append)
+    node.start()
+
+  def assemble_begin(self):
+    self.install.setText('Processing...')
+    self.freeze_buttons()
+
+  def assemble_finish(self):
+    self.install.setText('Assemble')
+    self.unfreeze_buttons()
+
+  def assemble_clicked(self):
+    self.console_clear()
+    node = Node(self, self.local_dir, [ GRUNT, "make" ])
+    node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
+    node.begin.connect(self.assemble_begin)
+    node.finish.connect(self.assemble_finish)
     node.start()
 
 if __name__ == '__main__':
