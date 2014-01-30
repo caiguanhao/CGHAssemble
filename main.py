@@ -9,6 +9,8 @@ from PyQt4.QtGui import *
 from dulwich.repo import Repo
 from dulwich.client import get_transport_and_path
 
+from ansi2html import Ansi2HTMLConverter
+
 remote_repository = 'https://github.com/choigoonho/maijie.git'
 
 if getattr(sys, 'frozen', False):
@@ -76,7 +78,8 @@ class Node(QThread):
       while True:
         line = nodeprocess.stdout.readline()
         if line != '':
-          self.progress.emit(line.rstrip())
+          line = Ansi2HTMLConverter().convert(line.rstrip())
+          self.progress.emit(line)
         else:
           break
     except Exception as error:
@@ -132,6 +135,10 @@ class MainWindow(QMainWindow):
     self.buttons.append(select_local)
 
     self.console = QTextEdit()
+    self.console.setReadOnly(True)
+    self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    self.console.setFrameStyle(QFrame.NoFrame)
+    self.console.setStyleSheet("QTextEdit { background: #000; color: #fff }");
     self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
     self.console.setFontPointSize(10)
     if WINDOWS:
@@ -198,6 +205,7 @@ class MainWindow(QMainWindow):
   def console_append(self, content):
     self.console.append(str(content))
     self.console.moveCursor(QTextCursor.End)
+    self.console.horizontalScrollBar().setValue(0)
 
   def freeze_buttons(self):
     for index, button in enumerate(self.buttons):
@@ -253,11 +261,11 @@ class MainWindow(QMainWindow):
     node.start()
 
   def assemble_begin(self):
-    self.install.setText('Processing...')
+    self.assemble.setText('Processing...')
     self.freeze_buttons()
 
   def assemble_finish(self):
-    self.install.setText('Assemble')
+    self.assemble.setText('Assemble')
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
