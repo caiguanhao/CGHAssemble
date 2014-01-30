@@ -9,18 +9,19 @@ from PyQt4.QtGui import *
 from dulwich.repo import Repo
 from dulwich.client import get_transport_and_path
 
-PLATFORM = platform.system()
-WINDOWS = PLATFORM == 'Windows'
-
-remote_repository = 'https://github.com/caiguanhao/test.git'
+remote_repository = 'https://github.com/choigoonho/maijie.git'
 
 if getattr(sys, 'frozen', False):
   basedir = sys._MEIPASS # PyInstaller path
 else:
   basedir = os.path.dirname(os.path.abspath(__file__))
 
-def path(*args):
-  return QDir.toNativeSeparators(str(QDir.separator()).join(args))
+PLATFORM = platform.system()
+WINDOWS = PLATFORM == 'Windows'
+
+NODE = os.path.join(basedir, "node.exe")
+NPM = os.path.join(basedir, "npm", "cli.js")
+GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
 
 class Clone(QThread):
   begin = pyqtSignal()
@@ -54,11 +55,33 @@ class Clone(QThread):
     finally:
       self.finish.emit()
 
+class Node(QThread):
+  progress = pyqtSignal(str)
+
+  def __init__(self, parent, local):
+    QThread.__init__(self, parent)
+    self.local = local
+
+  def run(self):
+    nodeprocess = None
+    try:
+      env = os.environ.copy()
+      nodeprocess = subprocess.Popen([ NODE, GRUNT ], cwd=self.local,
+        env=env, stdout=subprocess.PIPE)
+      while True:
+        line = nodeprocess.stdout.readline()
+        if line != '':
+          self.progress.emit(line.rstrip())
+        else:
+          break
+    except Exception as error:
+      self.error.emit(error)
+
 class MainWindow(QMainWindow):
   def __init__(self):
     QMainWindow.__init__(self);
-    width = 500
-    height = 200
+    width = 600
+    height = 400
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
     self.setWindowTitle('CGHAssemble')
@@ -104,6 +127,8 @@ class MainWindow(QMainWindow):
     self.console = QTextEdit()
     self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
     self.console.setFontPointSize(10)
+    if WINDOWS:
+      self.console.setFontPointSize(8)
     self.console.setText('Ready.')
     grid.addWidget(self.console, 2, 0, 1, 3)
 
@@ -115,9 +140,10 @@ class MainWindow(QMainWindow):
     button_grid.addWidget(self.pull, 0, 0)
     self.buttons.append(self.pull)
 
-    preview = QPushButton('Preview')
-    button_grid.addWidget(preview, 0, 1)
-    self.buttons.append(preview)
+    self.preview = QPushButton('Preview')
+    self.preview.clicked.connect(self.preview_clicked)
+    button_grid.addWidget(self.preview, 0, 1)
+    self.buttons.append(self.preview)
 
     assemble = QPushButton('Assemble')
     button_grid.addWidget(assemble, 0, 2)
@@ -129,7 +155,7 @@ class MainWindow(QMainWindow):
 
   def path(self, path):
     basename = QFileInfo(remote_repository).baseName()
-    return QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename)
+    return str(QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename))
 
   def to_copy_remote(self):
     QApplication.clipboard().setText(remote_repository)
@@ -184,6 +210,11 @@ class MainWindow(QMainWindow):
     clone.begin.connect(self.clone_begin)
     clone.finish.connect(self.clone_finish)
     clone.start()
+
+  def preview_clicked(self):
+    node = Node(self, self.local_dir)
+    node.progress.connect(self.console_append)
+    node.start()
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
