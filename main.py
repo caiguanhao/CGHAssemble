@@ -5,6 +5,8 @@ import sys
 import subprocess
 import platform
 
+import psutil
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -28,6 +30,14 @@ NPM = os.path.join(basedir, "npm", "cli.js")
 GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
 
 CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
+
+# kill previous launched but not ended node process
+for proc in psutil.process_iter():
+  try:
+    if proc.name == "node.exe" and proc.getcwd().startswith(basedir):
+      proc.kill()
+  except:
+    pass
 
 class Clone(QThread):
   begin = pyqtSignal()
@@ -278,12 +288,17 @@ class MainWindow(QMainWindow):
     self.preview.setText('Preview')
     self.unfreeze_buttons()
 
+  def preview_closed(self):
+    self.console_append('Preview is now closed.')
+    self.preview_finish()
+
   def preview_clicked(self):
     if self.previewing:
       try:
+        self.preview_process.finish.disconnect(self.preview_finish);
+        self.freeze_buttons()
         self.preview_process.process.kill()
-        QTimer.singleShot(1000, lambda: self.console_append('Preview is now closed.'))
-        self.preview_finish()
+        QTimer.singleShot(1000, self.preview_closed)
       except Exception as error:
         self.console_append(error)
     else:
