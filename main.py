@@ -190,7 +190,8 @@ class MainWindow(QMainWindow):
 
   def path(self, path):
     basename = QFileInfo(remote_repository).baseName()
-    return str(QDir.toNativeSeparators(QDir(path).canonicalPath() + QDir.separator() + basename))
+    return unicode(QDir.toNativeSeparators(QDir(path).canonicalPath() +
+      QDir.separator() + basename))
 
   def to_copy_remote(self):
     QApplication.clipboard().setText(remote_repository)
@@ -205,14 +206,18 @@ class MainWindow(QMainWindow):
     self.update_local()
 
   def update_label(self, label, text, url):
-    elided_text = QFontMetrics(label.font()).elidedText(text, Qt.ElideMiddle, label.width());
+    elided_text = QFontMetrics(label.font()).elidedText(text,
+      Qt.ElideMiddle, label.width());
     label.setText('<a href="' + url + '">' + elided_text + '</a>');
 
   def update_remote(self):
     self.update_label(self.remote, remote_repository, remote_repository)
 
   def update_local(self):
-    self.update_label(self.local, self.local_dir, 'file:///' + self.local_dir)
+    local_dir_ = self.local_dir
+    if not os.path.isdir(local_dir_): local_dir_ = os.path.dirname(local_dir_)
+    local_dir_ = local_dir_.replace('\\', '/')
+    self.update_label(self.local, self.local_dir, 'file:///' + local_dir_)
 
   def console_clear(self):
     self.console.clear()
@@ -276,7 +281,7 @@ class MainWindow(QMainWindow):
     self.previewing = False
     self.preview.setText('Processing...')
     self.freeze_buttons()
-    QTimer.singleShot(2000, self.preview_previewing)
+    QTimer.singleShot(5000, self.preview_previewing)
 
   def preview_previewing(self):
     self.previewing = True
