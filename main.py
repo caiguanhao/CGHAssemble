@@ -80,7 +80,7 @@ class Node(QThread):
       while True:
         line = nodeprocess.stdout.readline()
         if line != '':
-          line = CONVERTER.convert(line.rstrip())
+          line = CONVERTER.convert(line.decode('utf-8').strip())
           self.progress.emit(line)
         else:
           break
@@ -204,10 +204,14 @@ class MainWindow(QMainWindow):
     self.console.setFontPointSize(10)
     if WINDOWS:
       self.console.setFontPointSize(8)
-    self.console.append(str(content))
+    self.console_append(content)
 
   def console_append(self, content):
-    self.console.append(str(content))
+    if isinstance(content, Exception):
+      text = str(content)
+    else:
+      text = content
+    self.console.append(text)
     self.console.moveCursor(QTextCursor.End)
     self.console.horizontalScrollBar().setValue(0)
 
