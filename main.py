@@ -122,6 +122,7 @@ class MainWindow(QMainWindow):
     self.setWindowTitle('CGHAssemble')
     try:
       self.local_dir = str(SETTINGS.value('local_dir').toString())
+      if not self.local_dir: raise
     except:
       self.local_dir = self.path(basedir)
     self.previewing = False
@@ -319,6 +320,15 @@ class MainWindow(QMainWindow):
       except Exception as error:
         self.console_append(error)
     else:
+      if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
+        QMessageBox.warning(self, "Error", "The Gruntfile.js file is not " +
+          "found in local directory. Nothing to preview.")
+        return
+      if not os.path.isdir(os.path.join(self.local_dir, 'node_modules',
+        'grunt')):
+        QMessageBox.warning(self, "Error", "Grunt is not installed in " +
+          "node_modules directory. Please click Install button first.")
+        return
       self.console_clear()
       node = Node(self, self.local_dir, [ GRUNT ])
       node.progress.connect(self.console_append)
@@ -337,6 +347,14 @@ class MainWindow(QMainWindow):
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
+    if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
+      QMessageBox.warning(self, "Error", "The Gruntfile.js file is not " +
+        "found in local directory. Nothing to assemble.")
+      return
+    if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
+      QMessageBox.warning(self, "Error", "Grunt is not installed in " +
+        "node_modules directory. Please click Install button first.")
+      return
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
     node.progress.connect(self.console_append)
