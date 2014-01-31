@@ -6,3 +6,5 @@ grunt-cli
 *.tar.gz
 *.exe
 *.ini
+*.iconset
+*.icns
