@@ -28,6 +28,9 @@ WINDOWS = PLATFORM == 'Windows'
 NODE = os.path.join(basedir, "node.exe")
 NPM = os.path.join(basedir, "npm", "cli.js")
 GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
+SETTINGS_FILE = os.path.join(basedir, "settings.ini")
+
+SETTINGS = QSettings(SETTINGS_FILE, QSettings.IniFormat)
 
 CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
 
@@ -117,7 +120,10 @@ class MainWindow(QMainWindow):
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
     self.setWindowTitle('CGHAssemble')
-    self.local_dir = self.path(basedir)
+    try:
+      self.local_dir = str(SETTINGS.value('local_dir').toString())
+    except:
+      self.local_dir = self.path(basedir)
     self.previewing = False
     self.setup_ui()
 
@@ -221,6 +227,7 @@ class MainWindow(QMainWindow):
     if not os.path.isdir(local_dir_): local_dir_ = os.path.dirname(local_dir_)
     local_dir_ = local_dir_.replace('\\', '/')
     self.update_label(self.local, self.local_dir, 'file:///' + local_dir_)
+    SETTINGS.setValue('local_dir', self.local_dir)
 
   def console_clear(self):
     self.console.clear()
