@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
       self.local_dir = str(SETTINGS.value('local_dir').toString())
       if not self.local_dir: raise
     except:
-      self.local_dir = self.path(basedir)
+      self.local_dir = self.path(os.path.expanduser('~'))
     self.previewing = False
     self.setup_ui()
 
@@ -199,9 +199,10 @@ class MainWindow(QMainWindow):
     self.setCentralWidget(frame)
 
   def path(self, path):
-    basename = QFileInfo(remote_repository).baseName()
-    return unicode(QDir.toNativeSeparators(QDir(path).canonicalPath() +
-      QDir.separator() + basename))
+    basename = os.path.splitext(os.path.basename(remote_repository))[0]
+    newpath = os.path.abspath(os.path.join(path, basename))
+    newpath = newpath[:1].upper() + newpath[1:]
+    return newpath
 
   def to_copy_remote(self):
     QApplication.clipboard().setText(remote_repository)
@@ -210,7 +211,7 @@ class MainWindow(QMainWindow):
 
   def browse_folder(self, ele):
     folder = QFileDialog.getExistingDirectory(self, 'Select Folder',
-      remote_repository, QFileDialog.ShowDirsOnly)
+      self.local_dir, QFileDialog.ShowDirsOnly)
     if not folder: return
     try:
       str(folder).decode('ascii')
@@ -218,7 +219,7 @@ class MainWindow(QMainWindow):
       self.warn("Please select a folder which path contains no unicode " +
         "characters.")
     else:
-      self.local_dir = self.path(folder)
+      self.local_dir = self.path(str(folder))
       self.update_local()
 
   def update_label(self, label, text, url):
