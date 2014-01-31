@@ -212,8 +212,14 @@ class MainWindow(QMainWindow):
     folder = QFileDialog.getExistingDirectory(self, 'Select Folder',
       remote_repository, QFileDialog.ShowDirsOnly)
     if not folder: return
-    self.local_dir = self.path(folder)
-    self.update_local()
+    try:
+      str(folder).decode('ascii')
+    except UnicodeEncodeError:
+      self.warn("Please select a folder which path contains no unicode " +
+        "characters.")
+    else:
+      self.local_dir = self.path(folder)
+      self.update_local()
 
   def update_label(self, label, text, url):
     elided_text = QFontMetrics(label.font()).elidedText(text,
@@ -321,13 +327,13 @@ class MainWindow(QMainWindow):
         self.console_append(error)
     else:
       if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-        QMessageBox.warning(self, "Error", "The Gruntfile.js file is not " +
-          "found in local directory. Nothing to preview.")
+        self.warn("The Gruntfile.js file is not found in local directory. " +
+          "Nothing to preview.")
         return
       if not os.path.isdir(os.path.join(self.local_dir, 'node_modules',
         'grunt')):
-        QMessageBox.warning(self, "Error", "Grunt is not installed in " +
-          "node_modules directory. Please click Install button first.")
+        self.warn("Grunt is not installed in node_modules directory. " +
+          "Please click Install button first.")
         return
       self.console_clear()
       node = Node(self, self.local_dir, [ GRUNT ])
@@ -348,12 +354,12 @@ class MainWindow(QMainWindow):
 
   def assemble_clicked(self):
     if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-      QMessageBox.warning(self, "Error", "The Gruntfile.js file is not " +
-        "found in local directory. Nothing to assemble.")
+      self.warn("The Gruntfile.js file is not found in local directory. " +
+        "Nothing to assemble.")
       return
     if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
-      QMessageBox.warning(self, "Error", "Grunt is not installed in " +
-        "node_modules directory. Please click Install button first.")
+      self.warn("Grunt is not installed in node_modules directory. " +
+        "Please click Install button first.")
       return
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
@@ -362,6 +368,9 @@ class MainWindow(QMainWindow):
     node.begin.connect(self.assemble_begin)
     node.finish.connect(self.assemble_finish)
     node.start()
+
+  def warn(self, text):
+    QMessageBox.warning(self, "Error", text)
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
