@@ -53,9 +53,12 @@ class Clone(QThread):
   def run(self):
     self.begin.emit()
     try:
+      self.remote = str(self.remote)
+      self.local = str(self.local)
+
       client, host_path = get_transport_and_path(self.remote)
 
-      if QFile.exists(os.path.join(self.local, '.git')):
+      if os.path.isdir(os.path.join(self.local, '.git')):
         repo = Repo(self.local)
       else:
         repo = Repo.init(self.local, mkdir=True)
@@ -224,6 +227,7 @@ class MainWindow(QMainWindow):
 
   def console_append(self, content):
     text = unicode(content)
+    text = text.replace('\r', '\n')
     text = CONVERTER.convert(text)
     self.console.append(text)
     self.console.moveCursor(QTextCursor.End)
@@ -238,6 +242,7 @@ class MainWindow(QMainWindow):
       button.setEnabled(True)
 
   def clone_begin(self):
+    self.console_append('Connecting...')
     self.pull.setText('Processing...')
     self.freeze_buttons()
 
