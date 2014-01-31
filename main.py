@@ -71,16 +71,16 @@ class Node(QThread):
     QThread.__init__(self, parent)
     self.local = local
     self.commands = commands
+    self.process = None
 
   def run(self):
     self.begin.emit()
-    nodeprocess = None
     try:
       env = os.environ.copy()
-      nodeprocess = subprocess.Popen([ NODE ] + self.commands, cwd=self.local,
+      self.process = subprocess.Popen([ NODE ] + self.commands, cwd=self.local,
         env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       while True:
-        line = nodeprocess.stdout.readline()
+        line = self.process.stdout.readline()
         if line != '':
           line = line.decode('utf-8').strip()
           self.progress.emit(line)
@@ -90,9 +90,10 @@ class Node(QThread):
       self.error.emit(error)
     finally:
       return_code = 1
-      if hasattr(nodeprocess, 'communicate'):
-        nodeprocess.communicate()
-        return_code = nodeprocess.returncode
+      if hasattr(self.process, 'communicate'):
+        self.process.communicate()
+        return_code = self.process.returncode
+      self.process = None
       self.finish.emit(return_code)
 
 class MainWindow(QMainWindow):
@@ -104,6 +105,7 @@ class MainWindow(QMainWindow):
     self.move((QApplication.desktop().width() - width) / 2, 100)
     self.setWindowTitle('CGHAssemble')
     self.local_dir = self.path(basedir)
+    self.previewing = False
     self.setup_ui()
 
   def setup_ui(self):
@@ -260,12 +262,39 @@ class MainWindow(QMainWindow):
     node.finish.connect(self.install_finish)
     node.start()
 
+  def preview_begin(self):
+    self.previewing = False
+    self.preview.setText('Processing...')
+    self.freeze_buttons()
+    QTimer.singleShot(2000, self.preview_previewing)
+
+  def preview_previewing(self):
+    self.previewing = True
+    self.preview.setEnabled(True)
+    self.preview.setText('Close')
+
+  def preview_finish(self, return_code=-1):
+    self.previewing = False
+    self.preview.setText('Preview')
+    self.unfreeze_buttons()
+
   def preview_clicked(self):
-    self.console_clear()
-    node = Node(self, self.local_dir, [ GRUNT ])
-    node.progress.connect(self.console_append)
-    node.error.connect(self.console_append)
-    node.start()
+    if self.previewing:
+      try:
+        self.preview_process.process.kill()
+        QTimer.singleShot(1000, lambda: self.console_append('Preview is now closed.'))
+        self.preview_finish()
+      except Exception as error:
+        self.console_append(error)
+    else:
+      self.console_clear()
+      node = Node(self, self.local_dir, [ GRUNT ])
+      node.progress.connect(self.console_append)
+      node.error.connect(self.console_append)
+      node.begin.connect(self.preview_begin)
+      node.finish.connect(self.preview_finish)
+      node.start()
+      self.preview_process = node
 
   def assemble_begin(self):
     self.assemble.setText('Processing...')
