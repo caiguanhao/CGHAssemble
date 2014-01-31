@@ -34,6 +34,8 @@ SETTINGS = QSettings(SETTINGS_FILE, QSettings.IniFormat)
 
 CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
 
+REBOOT_CODE = 123
+
 # kill previous launched but not ended node process
 for proc in psutil.process_iter():
   try:
@@ -201,13 +203,20 @@ class MainWindow(QMainWindow):
     credits.setAlignment(Qt.AlignHCenter)
     credits.setText('Created by caiguanhao. View source and docs or report' +
       ' issues on <a href="https://github.com/caiguanhao/CGHAssemble">' +
-      'GitHub</a>.')
-    credits.setOpenExternalLinks(True)
+      'GitHub</a>. <a href="#' + tr('lang-zh') + '">' + tr('Chinese') + '</a>')
+    credits.linkActivated.connect(self.credits_clicked)
     button_grid.addWidget(credits, 1, 0, 1, 4)
 
     frame = QFrame()
     frame.setLayout(grid)
     self.setCentralWidget(frame)
+
+  def credits_clicked(self, url):
+    if url[:6] == '#lang-':
+      SETTINGS.setValue('lang', url[6:])
+      app.exit(REBOOT_CODE)
+      return
+    QDesktopServices.openUrl(QUrl(url))
 
   def path(self, path):
     basename = os.path.splitext(os.path.basename(remote_repository))[0]
@@ -388,13 +397,26 @@ def tr(msg):
   return QCoreApplication.translate("@default", msg)
 
 if __name__ == '__main__':
-  app = QApplication(sys.argv)
-  app.setApplicationName(tr('CGHAssemble'))
 
-  translator = QTranslator()
-  translator.load('i18n/zh')
-  app.installTranslator(translator)
+  while True:
 
-  main = MainWindow()
-  main.show()
-  sys.exit(app.exec_())
+    app = QApplication(sys.argv)
+    app.setApplicationName(tr('CGHAssemble'))
+
+    try:
+      lang = str(SETTINGS.value('lang').toString())
+      translator = QTranslator()
+      translator.load('i18n/' + lang)
+      app.installTranslator(translator)
+    except:
+      pass
+
+    main = MainWindow()
+    main.show()
+    return_code = app.exec_()
+
+    del app
+    del main
+
+    if return_code is not REBOOT_CODE:
+      break
