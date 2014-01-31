@@ -71,7 +71,7 @@ class Clone(QThread):
         progress=self.progress.emit)
       repo["HEAD"] = remote_refs["HEAD"]
       repo._build_tree()
-      self.progress.emit('Up-to-date.')
+      self.progress.emit(tr('Up-to-date.'))
     except Exception as error:
       self.error.emit(error)
     finally:
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
     height = 400
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
-    self.setWindowTitle('CGHAssemble')
+    self.setWindowTitle(tr('CGHAssemble'))
     try:
       self.local_dir = str(SETTINGS.value('local_dir').toString())
       if not self.local_dir: raise
@@ -168,28 +168,28 @@ class MainWindow(QMainWindow):
     self.console.setReadOnly(True)
     self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }");
-    self.console_append('Ready.')
+    self.console_append(tr('Ready.'))
     grid.addWidget(self.console, 2, 0, 1, 3)
 
     button_grid = QGridLayout()
     grid.addLayout(button_grid, 3, 0, 1, 3)
 
-    self.pull = QPushButton('Download/Update')
+    self.pull = QPushButton(tr('Download/Update'))
     self.pull.clicked.connect(self.pull_clicked)
     button_grid.addWidget(self.pull, 0, 0)
     self.buttons.append(self.pull)
 
-    self.install = QPushButton('Install')
+    self.install = QPushButton(tr('Install'))
     self.install.clicked.connect(self.install_clicked)
     button_grid.addWidget(self.install, 0, 1)
     self.buttons.append(self.install)
 
-    self.preview = QPushButton('Preview')
+    self.preview = QPushButton(tr('Preview'))
     self.preview.clicked.connect(self.preview_clicked)
     button_grid.addWidget(self.preview, 0, 2)
     self.buttons.append(self.preview)
 
-    self.assemble = QPushButton('Assemble')
+    self.assemble = QPushButton(tr('Assemble'))
     self.assemble.clicked.connect(self.assemble_clicked)
     button_grid.addWidget(self.assemble, 0, 3)
     self.buttons.append(self.assemble)
@@ -217,18 +217,18 @@ class MainWindow(QMainWindow):
 
   def to_copy_remote(self):
     QApplication.clipboard().setText(remote_repository)
-    self.copy_remote.setText('Copied!')
-    QTimer.singleShot(1000, lambda: self.copy_remote.setText('Copy'))
+    self.copy_remote.setText(tr('Copied!'))
+    QTimer.singleShot(1000, lambda: self.copy_remote.setText(tr('Copy')))
 
   def browse_folder(self, ele):
-    folder = QFileDialog.getExistingDirectory(self, 'Select Folder',
+    folder = QFileDialog.getExistingDirectory(self, tr('Select Folder'),
       self.local_dir, QFileDialog.ShowDirsOnly)
     if not folder: return
     try:
       str(folder).decode('ascii')
     except UnicodeEncodeError:
-      self.warn("Please select a folder which path contains no unicode " +
-        "characters.")
+      self.warn(tr("Please select a folder which path contains no unicode " +
+        "characters."))
     else:
       self.local_dir = self.path(str(folder))
       self.update_local()
@@ -268,12 +268,12 @@ class MainWindow(QMainWindow):
       button.setEnabled(True)
 
   def clone_begin(self):
-    self.console_append('Connecting...')
-    self.pull.setText('Processing...')
+    self.console_append(tr('Connecting...'))
+    self.pull.setText(tr('Processing...'))
     self.freeze_buttons()
 
   def clone_finish(self):
-    self.pull.setText('Download/Update')
+    self.pull.setText(tr('Download/Update'))
     self.unfreeze_buttons()
 
   def pull_clicked(self):
@@ -286,19 +286,19 @@ class MainWindow(QMainWindow):
     clone.start()
 
   def install_begin(self):
-    self.install.setText('Processing...')
+    self.install.setText(tr('Processing...'))
     self.freeze_buttons()
 
   def install_finish(self, return_code):
-    self.install.setText('Install')
+    self.install.setText(tr('Install'))
     self.unfreeze_buttons()
     if return_code is 0:
-      self.console_append('All packages have been successfully installed.')
+      self.console_append(tr('All packages have been successfully installed.'))
 
   def install_clicked(self):
     if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
-      QMessageBox.warning(self, "Error", "The package.json file is not " +
-        "found in local directory. Nothing to install.")
+      QMessageBox.warning(self, "Error", tr("The package.json file is not " +
+        "found in local directory. Nothing to install."))
       return
     self.console_clear()
     node = Node(self, self.local_dir, [ NPM, "install" ])
@@ -310,22 +310,22 @@ class MainWindow(QMainWindow):
 
   def preview_begin(self):
     self.previewing = False
-    self.preview.setText('Processing...')
+    self.preview.setText(tr('Processing...'))
     self.freeze_buttons()
     QTimer.singleShot(5000, self.preview_previewing)
 
   def preview_previewing(self):
     self.previewing = True
     self.preview.setEnabled(True)
-    self.preview.setText('Close')
+    self.preview.setText(tr('Close'))
 
   def preview_finish(self, return_code=-1):
     self.previewing = False
-    self.preview.setText('Preview')
+    self.preview.setText(tr('Preview'))
     self.unfreeze_buttons()
 
   def preview_closed(self):
-    self.console_append('Preview is now closed.')
+    self.console_append(tr('Preview is now closed.'))
     self.preview_finish()
 
   def preview_clicked(self):
@@ -339,13 +339,13 @@ class MainWindow(QMainWindow):
         self.console_append(error)
     else:
       if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-        self.warn("The Gruntfile.js file is not found in local directory. " +
-          "Nothing to preview.")
+        self.warn(tr("The Gruntfile.js file is not found in local directory. " +
+          "Nothing to preview."))
         return
       if not os.path.isdir(os.path.join(self.local_dir, 'node_modules',
         'grunt')):
-        self.warn("Grunt is not installed in node_modules directory. " +
-          "Please click Install button first.")
+        self.warn(tr("Grunt is not installed in node_modules directory. " +
+          "Please click Install button first."))
         return
       self.console_clear()
       node = Node(self, self.local_dir, [ GRUNT ])
@@ -357,21 +357,21 @@ class MainWindow(QMainWindow):
       self.preview_process = node
 
   def assemble_begin(self):
-    self.assemble.setText('Processing...')
+    self.assemble.setText(tr('Processing...'))
     self.freeze_buttons()
 
   def assemble_finish(self, return_code):
-    self.assemble.setText('Assemble')
+    self.assemble.setText(tr('Assemble'))
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
     if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-      self.warn("The Gruntfile.js file is not found in local directory. " +
-        "Nothing to assemble.")
+      self.warn(tr("The Gruntfile.js file is not found in local directory. " +
+        "Nothing to assemble."))
       return
     if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
-      self.warn("Grunt is not installed in node_modules directory. " +
-        "Please click Install button first.")
+      self.warn(tr("Grunt is not installed in node_modules directory. " +
+        "Please click Install button first."))
       return
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
@@ -382,14 +382,14 @@ class MainWindow(QMainWindow):
     node.start()
 
   def warn(self, text):
-    QMessageBox.warning(self, "Error", text)
+    QMessageBox.warning(self, tr("Error"), text)
 
 def tr(msg):
   return QCoreApplication.translate("@default", msg)
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
-  app.setApplicationName('CGHAssemble')
+  app.setApplicationName(tr('CGHAssemble'))
 
   translator = QTranslator()
   translator.load('i18n/zh')
