@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
     # the middle column expands
     grid.setColumnStretch(1, 10);
 
-    source = QLabel('Source')
+    source = QLabel(tr('Source'))
     grid.addWidget(source, 0, 0)
 
     self.remote = QLabel()
@@ -144,13 +144,13 @@ class MainWindow(QMainWindow):
     grid.addWidget(self.remote, 0, 1)
     self.update_remote()
 
-    self.copy_remote = QPushButton('Copy')
+    self.copy_remote = QPushButton(tr('Copy'))
     self.copy_remote.clicked.connect(self.to_copy_remote)
     self.copy_remote.setFocusPolicy(Qt.NoFocus)
     grid.addWidget(self.copy_remote, 0, 2)
     self.buttons.append(self.copy_remote)
 
-    dest = QLabel('Local')
+    dest = QLabel(tr('Local'))
     grid.addWidget(dest, 1, 0)
 
     self.local = QLabel()
@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
     grid.addWidget(self.local, 1, 1)
     self.update_local()
 
-    select_local = QPushButton('Browse...')
+    select_local = QPushButton(tr('Browse...'))
     select_local.clicked.connect(self.browse_folder)
     select_local.setFocusPolicy(Qt.NoFocus)
     grid.addWidget(select_local, 1, 2)
@@ -384,9 +384,17 @@ class MainWindow(QMainWindow):
   def warn(self, text):
     QMessageBox.warning(self, "Error", text)
 
+def tr(msg):
+  return QCoreApplication.translate("@default", msg)
+
 if __name__ == '__main__':
   app = QApplication(sys.argv)
   app.setApplicationName('CGHAssemble')
+
+  translator = QTranslator()
+  translator.load('i18n/zh')
+  app.installTranslator(translator)
+
   main = MainWindow()
   main.show()
   sys.exit(app.exec_())
