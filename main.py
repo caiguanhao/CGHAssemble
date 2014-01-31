@@ -61,7 +61,7 @@ class Clone(QThread):
 
 class Node(QThread):
   begin = pyqtSignal()
-  finish = pyqtSignal()
+  finish = pyqtSignal(int)
   progress = pyqtSignal(str)
   error = pyqtSignal(object)
 
@@ -80,14 +80,18 @@ class Node(QThread):
       while True:
         line = nodeprocess.stdout.readline()
         if line != '':
-          line = CONVERTER.convert(line.decode('utf-8').strip())
+          line = line.decode('utf-8').strip()
           self.progress.emit(line)
         else:
           break
     except Exception as error:
       self.error.emit(error)
     finally:
-      self.finish.emit()
+      return_code = 1
+      if hasattr(nodeprocess, 'communicate'):
+        nodeprocess.communicate()
+        return_code = nodeprocess.returncode
+      self.finish.emit(return_code)
 
 class MainWindow(QMainWindow):
   def __init__(self):
@@ -206,11 +210,15 @@ class MainWindow(QMainWindow):
       self.console.setFontPointSize(8)
     self.console_append(content)
 
-  def console_append(self, content):
+  def console_append_rich(self, content):
+    self.console_append(content, True)
+
+  def console_append(self, content, rich=False):
     if isinstance(content, Exception):
       text = str(content)
     else:
       text = content
+    if rich: text = CONVERTER.convert(text)
     self.console.append(text)
     self.console.moveCursor(QTextCursor.End)
     self.console.horizontalScrollBar().setValue(0)
@@ -244,9 +252,11 @@ class MainWindow(QMainWindow):
     self.install.setText('Processing...')
     self.freeze_buttons()
 
-  def install_finish(self):
+  def install_finish(self, return_code):
     self.install.setText('Install')
     self.unfreeze_buttons()
+    if return_code is 0:
+      self.console_append_rich('All packages have been successfully installed.')
 
   def install_clicked(self):
     if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
@@ -255,8 +265,8 @@ class MainWindow(QMainWindow):
       return
     self.console_clear()
     node = Node(self, self.local_dir, [ NPM, "install" ])
-    node.progress.connect(self.console_append)
-    node.error.connect(self.console_append)
+    node.progress.connect(self.console_append_rich)
+    node.error.connect(self.console_append_rich)
     node.begin.connect(self.install_begin)
     node.finish.connect(self.install_finish)
     node.start()
@@ -264,23 +274,23 @@ class MainWindow(QMainWindow):
   def preview_clicked(self):
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT ])
-    node.progress.connect(self.console_append)
-    node.error.connect(self.console_append)
+    node.progress.connect(self.console_append_rich)
+    node.error.connect(self.console_append_rich)
     node.start()
 
   def assemble_begin(self):
     self.assemble.setText('Processing...')
     self.freeze_buttons()
 
-  def assemble_finish(self):
+  def assemble_finish(self, return_code):
     self.assemble.setText('Assemble')
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
-    node.progress.connect(self.console_append)
-    node.error.connect(self.console_append)
+    node.progress.connect(self.console_append_rich)
+    node.error.connect(self.console_append_rich)
     node.begin.connect(self.assemble_begin)
     node.finish.connect(self.assemble_finish)
     node.start()
