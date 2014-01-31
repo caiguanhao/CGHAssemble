@@ -199,6 +199,8 @@ class MainWindow(QMainWindow):
     credits = QLabel()
     font = QFont()
     font.setPointSize(10)
+    if WINDOWS:
+      font.setPointSize(8)
     credits.setFont(font)
     credits.setAlignment(Qt.AlignHCenter)
     credits.setText('Created by caiguanhao. View source and docs or report' +
@@ -402,6 +404,11 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     app.setApplicationName(tr('CGHAssemble'))
+
+    if WINDOWS:
+      font = QFont()
+      font.setFamily('Verdana')
+      app.setFont(font)
 
     try:
       lang = str(SETTINGS.value('lang').toString())
