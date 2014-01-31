@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import subprocess
@@ -53,7 +55,7 @@ class Clone(QThread):
         progress=self.progress.emit)
       repo["HEAD"] = remote_refs["HEAD"]
       repo._build_tree()
-      self.progress.emit("Up-to-date.\n")
+      self.progress.emit('Up-to-date.')
     except Exception as error:
       self.error.emit(error)
     finally:
@@ -144,7 +146,7 @@ class MainWindow(QMainWindow):
     self.console.setReadOnly(True)
     self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
     self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }");
-    self.console_append_plain('Ready.')
+    self.console_append('Ready.')
     grid.addWidget(self.console, 2, 0, 1, 3)
 
     button_grid = QGridLayout()
@@ -203,22 +205,9 @@ class MainWindow(QMainWindow):
   def console_clear(self):
     self.console.clear()
 
-  def console_append_plain(self, content):
-    self.console.setFontFamily('Menlo, Lucida Console, Courier New, Courier')
-    self.console.setFontPointSize(10)
-    if WINDOWS:
-      self.console.setFontPointSize(8)
-    self.console_append(content)
-
-  def console_append_rich(self, content):
-    self.console_append(content, True)
-
-  def console_append(self, content, rich=False):
-    if isinstance(content, Exception):
-      text = str(content)
-    else:
-      text = content
-    if rich: text = CONVERTER.convert(text)
+  def console_append(self, content):
+    text = unicode(content)
+    text = CONVERTER.convert(text)
     self.console.append(text)
     self.console.moveCursor(QTextCursor.End)
     self.console.horizontalScrollBar().setValue(0)
@@ -242,8 +231,8 @@ class MainWindow(QMainWindow):
   def pull_clicked(self):
     self.console_clear()
     clone = Clone(self, remote_repository, self.local_dir)
-    clone.progress.connect(self.console_append_plain)
-    clone.error.connect(self.console_append_plain)
+    clone.progress.connect(self.console_append)
+    clone.error.connect(self.console_append)
     clone.begin.connect(self.clone_begin)
     clone.finish.connect(self.clone_finish)
     clone.start()
@@ -256,7 +245,7 @@ class MainWindow(QMainWindow):
     self.install.setText('Install')
     self.unfreeze_buttons()
     if return_code is 0:
-      self.console_append_rich('All packages have been successfully installed.')
+      self.console_append('All packages have been successfully installed.')
 
   def install_clicked(self):
     if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
@@ -265,8 +254,8 @@ class MainWindow(QMainWindow):
       return
     self.console_clear()
     node = Node(self, self.local_dir, [ NPM, "install" ])
-    node.progress.connect(self.console_append_rich)
-    node.error.connect(self.console_append_rich)
+    node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
     node.begin.connect(self.install_begin)
     node.finish.connect(self.install_finish)
     node.start()
@@ -274,8 +263,8 @@ class MainWindow(QMainWindow):
   def preview_clicked(self):
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT ])
-    node.progress.connect(self.console_append_rich)
-    node.error.connect(self.console_append_rich)
+    node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
     node.start()
 
   def assemble_begin(self):
@@ -289,8 +278,8 @@ class MainWindow(QMainWindow):
   def assemble_clicked(self):
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
-    node.progress.connect(self.console_append_rich)
-    node.error.connect(self.console_append_rich)
+    node.progress.connect(self.console_append)
+    node.error.connect(self.console_append)
     node.begin.connect(self.assemble_begin)
     node.finish.connect(self.assemble_finish)
     node.start()
