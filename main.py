@@ -194,6 +194,17 @@ class MainWindow(QMainWindow):
     button_grid.addWidget(self.assemble, 0, 3)
     self.buttons.append(self.assemble)
 
+    credits = QLabel()
+    font = QFont()
+    font.setPointSize(10)
+    credits.setFont(font)
+    credits.setAlignment(Qt.AlignHCenter)
+    credits.setText('Created by caiguanhao. View source and docs or report' +
+      ' issues on <a href="https://github.com/caiguanhao/CGHAssemble">' +
+      'GitHub</a>.')
+    credits.setOpenExternalLinks(True)
+    button_grid.addWidget(credits, 1, 0, 1, 4)
+
     frame = QFrame()
     frame.setLayout(grid)
     self.setCentralWidget(frame)
