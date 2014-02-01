@@ -17,6 +17,7 @@ npm = Tree('npm', prefix='npm')
 grunt_cli = Tree('grunt-cli', prefix='grunt-cli')
 a.datas += [
   ('res/hammer.png', 'res/hammer.png', 'DATA'),
+  ('res/hammer.ico', 'res/hammer.ico', 'DATA'),
   ('i18n/zh.qm', 'i18n/zh.qm', 'DATA'),
 ]
 collect = COLLECT(exe,

@@ -31,7 +31,27 @@ Section "Program Files" SecProgramFiles
   SetOutPath "$INSTDIR"
   File /r "dist\CGHAssemble\*"
   CreateShortCut "$DESKTOP\CGHAssemble.lnk" "$INSTDIR\CGHAssemble.exe" ""
-  WriteRegStr HKCU "Software\CGHAssemble" "" $INSTDIR
+  CreateDirectory "$SMPROGRAMS\CGHAssemble"
+  CreateShortCut "$SMPROGRAMS\CGHAssemble\Uninstall CGHAssemble.lnk" \
+    "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+  CreateShortCut "$SMPROGRAMS\CGHAssemble\CGHAssemble.lnk" \
+    "$INSTDIR\CGHAssemble.exe" "" "$INSTDIR\CGHAssemble.exe" 0
+  WriteRegStr HKLM "Software\CGHAssemble" "" $INSTDIR
+  WriteRegStr HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "DisplayName" "CGHAssemble (remove only)"
+  WriteRegStr HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "UninstallString" "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "DisplayIcon" "$INSTDIR\res\hammer.ico"
+  WriteRegStr HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "Publisher" "caiguanhao"
+  WriteRegStr HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "Comments" "A stupid Assemble tool."
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
@@ -46,5 +66,9 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
   Delete "$DESKTOP\CGHAssemble.lnk"
-  DeleteRegKey /ifempty HKCU "Software\CGHAssemble"
+  Delete "$SMPROGRAMS\CGHAssemble\*.*"
+  RmDir  "$SMPROGRAMS\CGHAssemble"
+  DeleteRegKey HKLM "Software\CGHAssemble"
+  DeleteRegKey HKLM \
+    "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble"
 SectionEnd
