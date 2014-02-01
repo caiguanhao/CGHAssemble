@@ -132,7 +132,7 @@ fi
 if [ ! -d "grunt-cli" ]; then
   "./node.exe" "npm/cli.js" install grunt-cli
   mv "node_modules/grunt-cli" .
-  rmdir "node_modules"
+  rm -rf "node_modules"
 fi
 
 echo "Done."
