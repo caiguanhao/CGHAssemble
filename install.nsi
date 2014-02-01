@@ -3,6 +3,8 @@
 Name "CGHAssemble"
 OutFile "CGHAssemble-setup.exe"
 
+SetCompressor /FINAL /SOLID lzma
+
 InstallDir "$PROGRAMFILES\CGHAssemble"
 
 InstallDirRegKey HKCU "Software\CGHAssemble" ""
@@ -10,6 +12,9 @@ InstallDirRegKey HKCU "Software\CGHAssemble" ""
 RequestExecutionLevel user
 
 !define MUI_ABORTWARNING
+
+!define MUI_ICON "res/hammer.ico"
+!define MUI_UNICON "res/hammer.ico"
 
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS

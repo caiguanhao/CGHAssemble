@@ -1,6 +1,8 @@
 node_modules
 npm
 grunt-cli
+build
+dist
 *.tgz
 *.zip
 *.tar.gz
