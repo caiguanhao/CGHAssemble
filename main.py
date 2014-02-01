@@ -93,10 +93,19 @@ class Node(QThread):
 
   def run(self):
     self.begin.emit()
+
+    startupinfo = None
+    try:
+      startupinfo = subprocess.STARTUPINFO()
+      startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    except:
+      pass
+
     try:
       env = os.environ.copy()
       self.process = subprocess.Popen([ NODE ] + self.commands, cwd=self.local,
-        env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        startupinfo=startupinfo)
       while True:
         line = self.process.stdout.readline()
         if line != '':
