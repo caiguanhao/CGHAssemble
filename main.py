@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
     grid.addWidget(dest, 1, 0)
 
     self.local = QLabel()
-    self.local.setOpenExternalLinks(True)
+    self.local.linkActivated.connect(self.local_clicked)
     grid.addWidget(self.local, 1, 1)
     self.update_local()
 
@@ -223,6 +223,15 @@ class MainWindow(QMainWindow):
     frame.setLayout(grid)
     self.setCentralWidget(frame)
 
+  def local_clicked(self, url):
+    try:
+      url = str(url)
+      if not os.path.isdir(url): url = os.path.dirname(url)
+      url = url.replace('\\', '/')
+      QDesktopServices.openUrl(QUrl('file:///' + url))
+    except:
+      pass
+
   def credits_clicked(self, url):
     if url[:6] == '#lang-':
       SETTINGS.setValue('lang', url[6:])
@@ -254,19 +263,16 @@ class MainWindow(QMainWindow):
       self.local_dir = self.path(str(folder))
       self.update_local()
 
-  def update_label(self, label, text, url):
+  def update_label(self, label, text):
     elided_text = QFontMetrics(label.font()).elidedText(text,
       Qt.ElideMiddle, label.width());
-    label.setText('<a href="' + url + '">' + elided_text + '</a>');
+    label.setText('<a href="' + text + '">' + elided_text + '</a>');
 
   def update_remote(self):
-    self.update_label(self.remote, remote_repository, remote_repository)
+    self.update_label(self.remote, remote_repository)
 
   def update_local(self):
-    local_dir_ = self.local_dir
-    if not os.path.isdir(local_dir_): local_dir_ = os.path.dirname(local_dir_)
-    local_dir_ = local_dir_.replace('\\', '/')
-    self.update_label(self.local, self.local_dir, 'file:///' + local_dir_)
+    self.update_label(self.local, self.local_dir)
     SETTINGS.setValue('local_dir', self.local_dir)
 
   def console_clear(self):
