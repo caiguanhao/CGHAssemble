@@ -16,7 +16,16 @@ RequestExecutionLevel user
 !define MUI_ICON "res/hammer.ico"
 !define MUI_UNICON "res/hammer.ico"
 
-!insertmacro MUI_PAGE_LICENSE "LICENSE"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW licpageshow
+
+Function licpageshow
+  FindWindow $0 "#32770" "" $HWNDPARENT
+  CreateFont $1 "Courier" "8"
+  GetDlgItem $0 $0 1000
+  SendMessage $0 ${WM_SETFONT} $1 1
+FunctionEnd
+
+!insertmacro MUI_PAGE_LICENSE "LICENSES"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
