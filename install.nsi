@@ -1,13 +1,28 @@
 !include "MUI2.nsh"
 
-Name "CGHAssemble"
-OutFile "CGHAssemble-setup.exe"
+!define APP_NAME "CGHAssemble"
+!define APP_DESC "A stupid Assemble tool."
+!define APP_VER "1.0.0.0"
+!define APP_AUTHOR "caiguanhao"
+
+Name "${APP_NAME}"
+BRANDINGTEXT "${APP_NAME} ${APP_VER}"
+OutFile "${APP_NAME}-setup.exe"
+
+VIProductVersion "${APP_VER}"
+VIAddVersionKey /LANG=1033 "ProductName" "${APP_NAME}"
+VIAddVersionKey /LANG=1033 "Comments" "${APP_DESC}"
+VIAddVersionKey /LANG=1033 "CompanyName" "${APP_AUTHOR}"
+VIAddVersionKey /LANG=1033 "LegalTrademarks" "Copyright (c) ${APP_AUTHOR}"
+VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright (c) ${APP_AUTHOR}"
+VIAddVersionKey /LANG=1033 "FileDescription" "${APP_DESC}"
+VIAddVersionKey /LANG=1033 "FileVersion" "${APP_VER}"
 
 SetCompressor /FINAL /SOLID lzma
 
-InstallDir "$PROGRAMFILES\CGHAssemble"
+InstallDir "$PROGRAMFILES\${APP_NAME}"
 
-InstallDirRegKey HKCU "Software\CGHAssemble" ""
+InstallDirRegKey HKCU "Software\${APP_NAME}" ""
 
 RequestExecutionLevel admin
 
@@ -38,29 +53,29 @@ FunctionEnd
 Section "Program Files" SecProgramFiles
   SectionIn RO
   SetOutPath "$INSTDIR"
-  File /r "dist\CGHAssemble\*"
-  CreateShortCut "$DESKTOP\CGHAssemble.lnk" "$INSTDIR\CGHAssemble.exe" ""
-  CreateDirectory "$SMPROGRAMS\CGHAssemble"
-  CreateShortCut "$SMPROGRAMS\CGHAssemble\Uninstall CGHAssemble.lnk" \
+  File /r "dist\${APP_NAME}\*"
+  CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME}.exe" ""
+  CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+  CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall ${APP_NAME}.lnk" \
     "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\CGHAssemble\CGHAssemble.lnk" \
-    "$INSTDIR\CGHAssemble.exe" "" "$INSTDIR\CGHAssemble.exe" 0
-  WriteRegStr HKLM "Software\CGHAssemble" "" $INSTDIR
+  CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" \
+    "$INSTDIR\${APP_NAME}.exe" "" "$INSTDIR\${APP_NAME}.exe" 0
+  WriteRegStr HKLM "Software\${APP_NAME}" "" $INSTDIR
   WriteRegStr HKLM \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
-    "DisplayName" "CGHAssemble (remove only)"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "DisplayName" "${APP_NAME} (remove only)"
   WriteRegStr HKLM \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
     "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
     "DisplayIcon" "$INSTDIR\res\hammer.ico"
   WriteRegStr HKLM \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
-    "Publisher" "caiguanhao"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "Publisher" "${APP_AUTHOR}"
   WriteRegStr HKLM \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble" \
-    "Comments" "A stupid Assemble tool."
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+    "Comments" "${APP_DESC}"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
@@ -74,10 +89,10 @@ LangString DESC_SecProgramFiles ${LANG_ENGLISH} \
 Section "Uninstall"
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
-  Delete "$DESKTOP\CGHAssemble.lnk"
-  Delete "$SMPROGRAMS\CGHAssemble\*.*"
-  RmDir  "$SMPROGRAMS\CGHAssemble"
-  DeleteRegKey HKLM "Software\CGHAssemble"
+  Delete "$DESKTOP\${APP_NAME}.lnk"
+  Delete "$SMPROGRAMS\${APP_NAME}\*.*"
+  RmDir  "$SMPROGRAMS\${APP_NAME}"
+  DeleteRegKey HKLM "Software\${APP_NAME}"
   DeleteRegKey HKLM \
-    "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\CGHAssemble"
+    "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 SectionEnd
