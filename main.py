@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+VERSION = "1.0.0.0"
 
 import os
 import sys
@@ -136,7 +137,7 @@ class MainWindow(QMainWindow):
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
 
-    self.setWindowTitle(tr('CGHAssemble'))
+    self.setWindowTitle(tr('CGHAssemble') + ' ' + VERSION)
     self.setWindowIcon(QIcon('res/hammer.png'))
     try:
       self.local_dir = str(SETTINGS.value('local_dir').toString())
