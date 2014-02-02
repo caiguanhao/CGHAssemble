@@ -9,6 +9,7 @@ import psutil
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4 import *
 
 from dulwich.repo import Repo
 from dulwich.client import get_transport_and_path
@@ -125,11 +126,16 @@ class Node(QThread):
 
 class MainWindow(QMainWindow):
   def __init__(self):
-    QMainWindow.__init__(self);
-    width = 600
-    height = 400
+    QMainWindow.__init__(self)
+
+    scale = 1
+    if WINDOWS:
+      scale = float(self.logicalDpiX()) / 96
+    width = 600 * scale
+    height = 400 * scale
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
+
     self.setWindowTitle(tr('CGHAssemble'))
     self.setWindowIcon(QIcon('res/hammer.png'))
     try:
