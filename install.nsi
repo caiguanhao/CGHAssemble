@@ -9,7 +9,7 @@ InstallDir "$PROGRAMFILES\CGHAssemble"
 
 InstallDirRegKey HKCU "Software\CGHAssemble" ""
 
-RequestExecutionLevel user
+RequestExecutionLevel admin
 
 !define MUI_ABORTWARNING
 
