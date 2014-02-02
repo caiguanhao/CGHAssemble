@@ -38,14 +38,6 @@ CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
 
 REBOOT_CODE = 123
 
-# kill previous launched but not ended node process
-for proc in psutil.process_iter():
-  try:
-    if proc.name == "node.exe" and proc.getcwd().startswith(basedir):
-      proc.kill()
-  except:
-    pass
-
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -144,6 +136,15 @@ class MainWindow(QMainWindow):
       if not self.local_dir: raise
     except:
       self.local_dir = self.path(os.path.expanduser('~'))
+
+    # kill previous launched but not ended node process
+    for proc in psutil.process_iter():
+      try:
+        if proc.name == "node.exe" and proc.getcwd().startswith(self.local_dir):
+          proc.kill()
+      except:
+        pass
+
     self.previewing = False
     self.setup_ui()
 
@@ -445,8 +446,13 @@ if __name__ == '__main__':
     main.show()
     return_code = app.exec_()
 
-    del app
-    del main
-
-    if return_code is not REBOOT_CODE:
+    if return_code is REBOOT_CODE:
+      del app
+      del main
+    else:
       break
+
+  try:
+    main.preview_process.process.kill()
+  finally:
+    sys.exit(return_code)
