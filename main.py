@@ -446,6 +446,7 @@ if __name__ == '__main__':
 
     main = MainWindow()
     main.show()
+    main.raise_()
     return_code = app.exec_()
 
     if return_code is REBOOT_CODE:
