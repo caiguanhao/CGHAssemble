@@ -437,7 +437,7 @@ if __name__ == '__main__':
     try:
       lang = str(SETTINGS.value('lang').toString())
       translator = QTranslator()
-      translator.load('i18n/' + lang)
+      translator.load(os.path.join(basedir, 'i18n', lang))
       app.installTranslator(translator)
     except:
       pass
