@@ -19,13 +19,14 @@ Conventions:
 
 * ``grunt`` to assemble the site in development mode.
 * ``grunt make`` to assemble the site in production mode.
-* File names can contain Unicode characters but not recommended to do so.
+* File names can contain Unicode characters but it is not recommended
+to do so.
 
 If you want to use this tool with your own repository or to use
 different grunt command, you must build it on your own.
 Build suggestions on Windows: Download msysgit (PortableGit),
-mintty (msys), Python 2.7.6, PyQt4 Windows binaries and then install
-Python packages like PyInstaller.
+mintty (msys), Python 2.7.6, PyQt4 Windows binaries, NSIS, and then
+install Python packages like PyInstaller.
 
 Translations
 ------------
