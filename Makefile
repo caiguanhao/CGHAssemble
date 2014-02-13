@@ -2,6 +2,8 @@ __VERSION__="1.0.1.0"
 
 MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
 
+NODE_MODULES=npm grunt-cli
+
 ifeq ($(OS), Windows_NT)
 	ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
 		ARCH="64bit"
@@ -75,4 +77,33 @@ version:
 	done; \
 	fi
 
-.PHONY: all clean dist installer hash
+CleanNodeModules:
+	du -sh $(NODE_MODULES)
+	# Remove all tests
+	find $(NODE_MODULES) -type d -name test | xargs rm -rf
+
+	# Remove all docs
+	find $(NODE_MODULES) -type d -name doc | xargs rm -rf
+
+	# Remove all manuals
+	find $(NODE_MODULES) -type d -name man | xargs rm -rf
+
+	# Remove all examples
+	find $(NODE_MODULES) -type d -name example | xargs rm -rf
+	find $(NODE_MODULES) -type d -name examples | xargs rm -rf
+
+	# Remove all images
+	find $(NODE_MODULES) -type d -name images | xargs rm -rf
+
+	# Remove dot files
+	find $(NODE_MODULES) -name ".npmignore" -o -name ".travis.yml" |\
+	xargs rm -rf
+
+	# Remove README
+	find $(NODE_MODULES) -name "README.md" | xargs rm -rf
+
+	# Other files
+	rm -rf npm/html
+	du -sh $(NODE_MODULES)
+
+.PHONY: all clean dist installer hash version CleanNodeModules
