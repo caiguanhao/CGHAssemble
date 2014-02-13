@@ -1,4 +1,4 @@
-__VERSION__="1.0.0.0"
+__VERSION__="1.0.1.0"
 
 MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
 

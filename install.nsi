@@ -2,7 +2,7 @@
 
 !define APP_NAME "CGHAssemble"
 !define APP_DESC "A stupid Assemble tool."
-!define APP_VER "1.0.0.0"
+!define APP_VER "1.0.1.0"
 !define APP_AUTHOR "caiguanhao"
 
 Name "${APP_NAME}"

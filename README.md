@@ -1,4 +1,4 @@
-CGHAssemble v1.0.0.0
+CGHAssemble v1.0.1.0
 ====================
 
 A stupid Assemble tool.
