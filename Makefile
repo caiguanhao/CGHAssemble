@@ -48,5 +48,9 @@ installer:
 	@if [ $(SYSTEM) == "WINDOWS" ]; then \
 	makensis install.nsi; \
 	fi
+	@if [ $(SYSTEM) == "MAC" ]; then \
+	rm -f CGHAssemble.zip; \
+	cd dist && zip ../CGHAssemble.zip -r CGHAssemble.app; \
+	fi
 
 .PHONY: all clean dist installer
