@@ -26,6 +26,7 @@ else:
 
 PLATFORM = platform.system()
 WINDOWS = PLATFORM == 'Windows'
+MAC = PLATFORM == 'Darwin'
 
 NODE = os.path.join(basedir, "node.exe")
 NPM = os.path.join(basedir, "npm", "cli.js")
@@ -130,7 +131,8 @@ class MainWindow(QMainWindow):
     self.move((QApplication.desktop().width() - width) / 2, 100)
 
     self.setWindowTitle(tr('CGHAssemble') + ' ' + VERSION)
-    self.setWindowIcon(QIcon('res/hammer.png'))
+    if not MAC:
+      self.setWindowIcon(QIcon(os.path.join(basedir, 'res', 'hammer.png')))
     try:
       self.local_dir = str(SETTINGS.value('local_dir').toString())
       if not self.local_dir: raise
