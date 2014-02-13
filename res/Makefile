@@ -1,7 +1,16 @@
 FILE=hammer
 SET=$(FILE).iconset
 
-icons:
+all:
+	@echo "This is a Makefile to generate .icns in Mac OS X."
+	@echo "make clean                 - to remove any generated files"
+	@echo "make iconset icns          - to make .icns"
+	@echo "make iconset optimize icns - if you have ImageOptim installed"
+
+clean:
+	rm -rf "$(SET)" "$(FILE).icns"
+
+iconset:
 	mkdir -p "$(SET)"
 	sips -z 16 16   "$(FILE).png" --out "$(SET)/icon_16x16.png"   > /dev/null
 	sips -z 32 32   "$(FILE).png" --out "$(SET)/icon_32x32.png"   > /dev/null
@@ -16,7 +25,9 @@ icons:
 	cp   "$(FILE).png"             "$(SET)/icon_512x512@2x.png"
 
 optimize:
-	open -a ImageOptim "$(SET)"
+	/Applications/ImageOptim.app/Contents/MacOS/ImageOptim "$(SET)"
 
 icns:
 	iconutil -c icns "$(SET)"
+
+.PHONY: clean iconset optimize icns
