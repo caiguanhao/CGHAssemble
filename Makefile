@@ -1,5 +1,7 @@
 __VERSION__="1.0.0.0"
 
+MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
+
 ifeq ($(OS), Windows_NT)
 	ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
 		ARCH="64bit"
@@ -51,14 +53,14 @@ installer:
 	makensis install.nsi; \
 	fi
 	@if [ $(SYSTEM) == "MAC" ]; then \
-	rm -f CGHAssemble.zip; \
-	cd dist && zip ../CGHAssemble.zip -r CGHAssemble.app; \
+	rm -f $(MAC_APP_ZIP_FILE_NAME); \
+	cd dist && zip ../$(MAC_APP_ZIP_FILE_NAME) -r CGHAssemble.app; \
 	fi
 
 hash:
 	@if [ $(SYSTEM) == "MAC" ]; then \
-	echo "  shasum: \"$$(shasum CGHAssemble.zip | cut -c 1-40)\""; \
-	echo "  md5sum: \"$$(md5 -q CGHAssemble.zip)\""; \
+	echo "  shasum: \"$$(shasum $(MAC_APP_ZIP_FILE_NAME) | cut -c 1-40)\""; \
+	echo "  md5sum: \"$$(md5 -q $(MAC_APP_ZIP_FILE_NAME))\""; \
 	fi
 
 version:
