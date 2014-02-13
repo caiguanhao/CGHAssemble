@@ -27,7 +27,7 @@ else
 	endif
 endif
 
-all: clean dist installer
+all: clean dist installer hash
 
 clean:
 	rm -rf build dist
@@ -53,4 +53,10 @@ installer:
 	cd dist && zip ../CGHAssemble.zip -r CGHAssemble.app; \
 	fi
 
-.PHONY: all clean dist installer
+hash:
+	@if [ $(SYSTEM) == "MAC" ]; then \
+	echo "  shasum: \"$$(shasum CGHAssemble.zip | cut -c 1-40)\""; \
+	echo "  md5sum: \"$$(md5 -q CGHAssemble.zip)\""; \
+	fi
+
+.PHONY: all clean dist installer hash
