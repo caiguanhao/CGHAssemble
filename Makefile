@@ -1,3 +1,5 @@
+__VERSION__="1.0.0.0"
+
 ifeq ($(OS), Windows_NT)
 	ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
 		ARCH="64bit"
@@ -57,6 +59,18 @@ hash:
 	@if [ $(SYSTEM) == "MAC" ]; then \
 	echo "  shasum: \"$$(shasum CGHAssemble.zip | cut -c 1-40)\""; \
 	echo "  md5sum: \"$$(md5 -q CGHAssemble.zip)\""; \
+	fi
+
+version:
+	@echo Current Version: $(__VERSION__)
+	@if [ -z "$(VERSION)" ]; then \
+	echo "To update version number, run: make VERSION=<new-version> version"; \
+	else \
+	for file in "install.nsi" "mac.spec" "main.py" "Makefile" "README.md"; do \
+	sed "s/$(__VERSION__)/$(VERSION)/g" "$${file}" > "$${file}.new"; \
+	mv "$${file}.new" "$${file}"; \
+	echo "Updated version number in $${file}"; \
+	done; \
 	fi
 
 .PHONY: all clean dist installer hash
