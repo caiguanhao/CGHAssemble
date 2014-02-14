@@ -28,6 +28,13 @@ Build suggestions on Windows: Download msysgit (PortableGit),
 mintty (msys), Python 2.7.6, PyQt4 Windows binaries, NSIS, and then
 install Python packages like PyInstaller.
 
+Make
+----
+
+* ``./configure`` to download dependencies.
+* ``make`` to build the app, installer (or zip archive).
+* ``make version=<new-version>`` to update the version number.
+
 Translations
 ------------
 
@@ -45,7 +52,7 @@ The Qt Linguist that helps translating .ts file can be found
 Bugs
 ----
 
-* In exchange of not showing a weird command-line window the console
+* In exchange of not showing a weird command-line window, the console
 (output) area may 'freeze' for a period of time while processing tasks
 on some versions of Windows.
 

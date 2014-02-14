@@ -33,7 +33,18 @@ else
 	endif
 endif
 
-all: clean dist installer hash
+all:
+	@if [ ! -z "$(version)" ]; then \
+	echo Current Version: $(__VERSION__); \
+	for file in "install.nsi" "mac.spec" "main.py" "Makefile" "README.md"; do \
+	sed "s/$(__VERSION__)/$(version)/g" "$${file}" > "$${file}.new"; \
+	mv "$${file}.new" "$${file}"; \
+	echo "Updated version number in $${file}"; \
+	done; \
+	echo Current Version: $(version); \
+	else \
+	make clean CleanNodeModules dist installer hash; \
+	fi
 
 clean:
 	rm -rf build dist
@@ -67,15 +78,7 @@ hash:
 
 version:
 	@echo Current Version: $(__VERSION__)
-	@if [ -z "$(VERSION)" ]; then \
-	echo "To update version number, run: make VERSION=<new-version> version"; \
-	else \
-	for file in "install.nsi" "mac.spec" "main.py" "Makefile" "README.md"; do \
-	sed "s/$(__VERSION__)/$(VERSION)/g" "$${file}" > "$${file}.new"; \
-	mv "$${file}.new" "$${file}"; \
-	echo "Updated version number in $${file}"; \
-	done; \
-	fi
+	@echo "To update version number, run: make version=<new-version>";
 
 CleanNodeModules:
 	du -sh $(NODE_MODULES)
