@@ -62,6 +62,9 @@ dist:
 	dist/CGHAssemble.app/Contents/Info.plist; \
 	rm -f dist/CGHAssemble.app/Contents/Info.plist.old; \
 	fi
+	@if [ "$(SYSTEM)" = "LINUX" ]; then \
+	pyinstaller -y linux.spec; \
+	fi
 
 installer:
 	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
