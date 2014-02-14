@@ -1,0 +1,17 @@
+Source: cghassemble
+Section: utils
+Priority: standard
+Maintainer: Choi Goon-ho <caiguanhao@gmail.com>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.3
+Bugs: https://github.com/caiguanhao/CGHAssemble/issues
+Homepage: https://github.com/caiguanhao/CGHAssemble
+
+Package: cghassemble
+Architecture: i386
+Depends: libc6 (>= 2.11)
+Description: A stupid Assemble tool.
+ This is a handy cross-platform desktop app to use Assemble,
+ a static website generator written in Node.js. The app can
+ download a Assemble website git repository to local directory,
+ install dependencies and run grunt tasks.

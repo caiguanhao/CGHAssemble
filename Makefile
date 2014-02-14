@@ -2,6 +2,8 @@ __VERSION__="1.0.1.0"
 
 MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
 
+DEB_NAME=cghassemble-$(__VERSION__)
+
 NODE_MODULES=npm grunt-cli
 
 ifeq ($(OS), Windows_NT)
@@ -34,6 +36,9 @@ else
 endif
 
 BIT=$(subst bit,,$(ARCH))
+
+export DEBFULLNAME=Choi Goon-ho
+export DEBEMAIL=caiguanhao@gmail.com
 
 all:
 	@if [ ! -z "$(version)" ]; then \
@@ -74,6 +79,20 @@ installer:
 	rm -f $(MAC_APP_ZIP_FILE_NAME); \
 	cd dist && zip ../$(MAC_APP_ZIP_FILE_NAME) -r CGHAssemble.app; \
 	fi
+	@if [ "$(SYSTEM)" = "LINUX" ]; then \
+	make deb; \
+	fi
+
+deb:
+	rm -rf dist/$(DEB_NAME)*
+	cp -rf dist/CGHAssemble dist/$(DEB_NAME)
+	(cd dist/$(DEB_NAME) && find * -type f -exec echo {} \
+	opt/CGHAssemble/{} \; | sed 's/\(.*\)\/.*/\1/g' > ../../debian/install)
+	(cd dist/$(DEB_NAME) && echo | dh_make --single --createorig)
+	mv debian/install dist/$(DEB_NAME)/debian/install
+	cp debian/control dist/$(DEB_NAME)/debian/control
+	cp debian/rules   dist/$(DEB_NAME)/debian/rules
+	(cd dist/$(DEB_NAME) && debuild --no-lintian -us -uc)
 
 hash:
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
