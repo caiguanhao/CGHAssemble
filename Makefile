@@ -52,10 +52,10 @@ clean:
 	rm -rf build dist
 
 dist:
-	@if [ $(SYSTEM) == "WINDOWS" ]; then \
+	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
 	pyinstaller -y win.spec; \
 	fi
-	@if [ $(SYSTEM) == "MAC" ]; then \
+	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	pyinstaller -y mac.spec; \
 	sed -i .old -e 's/<\/dict>/<key>NSHighResolutionCapable<\/key>\'\
 	$$'\n<string>1<\\/string>\\\n<\\/dict>/g' \
@@ -64,16 +64,16 @@ dist:
 	fi
 
 installer:
-	@if [ $(SYSTEM) == "WINDOWS" ]; then \
+	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
 	WIN_ARCH=$(BIT) makensis install.nsi; \
 	fi
-	@if [ $(SYSTEM) == "MAC" ]; then \
+	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	rm -f $(MAC_APP_ZIP_FILE_NAME); \
 	cd dist && zip ../$(MAC_APP_ZIP_FILE_NAME) -r CGHAssemble.app; \
 	fi
 
 hash:
-	@if [ $(SYSTEM) == "MAC" ]; then \
+	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	echo "  shasum: \"$$(shasum $(MAC_APP_ZIP_FILE_NAME) | cut -c 1-40)\""; \
 	echo "  md5sum: \"$$(md5 -q $(MAC_APP_ZIP_FILE_NAME))\""; \
 	fi
