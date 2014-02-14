@@ -88,6 +88,14 @@ deb:
 	cp -rf dist/CGHAssemble dist/$(DEB_NAME)
 	(cd dist/$(DEB_NAME) && find * -type f -exec echo {} \
 	opt/CGHAssemble/{} \; | sed 's/\(.*\)\/.*/\1/g' > ../../debian/install)
+
+	cp debian/CGHAssemble.desktop dist/$(DEB_NAME)
+	echo "CGHAssemble.desktop usr/share/applications" >> debian/install
+
+	cp -r res/hicolor dist/$(DEB_NAME)
+	(cd dist/$(DEB_NAME) && find hicolor -type f -exec \
+	echo {} usr/share/icons/{} \;  | sed 's/\(.*\)\/.*/\1/g') >> debian/install
+
 	(cd dist/$(DEB_NAME) && echo | dh_make --single --createorig)
 	mv debian/install dist/$(DEB_NAME)/debian/install
 	cp debian/control dist/$(DEB_NAME)/debian/control
