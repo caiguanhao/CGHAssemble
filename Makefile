@@ -33,6 +33,8 @@ else
 	endif
 endif
 
+BIT=$(subst bit,,$(ARCH))
+
 all:
 	@if [ ! -z "$(version)" ]; then \
 	echo Current Version: $(__VERSION__); \
@@ -63,7 +65,7 @@ dist:
 
 installer:
 	@if [ $(SYSTEM) == "WINDOWS" ]; then \
-	makensis install.nsi; \
+	WIN_ARCH=$(BIT) makensis install.nsi; \
 	fi
 	@if [ $(SYSTEM) == "MAC" ]; then \
 	rm -f $(MAC_APP_ZIP_FILE_NAME); \

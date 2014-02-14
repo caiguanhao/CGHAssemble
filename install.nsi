@@ -1,5 +1,12 @@
 !include "MUI2.nsh"
 
+!define WIN_ARCH $%WIN_ARCH%
+!define DOLLAR "$"
+
+!if ${WIN_ARCH} == "${DOLLAR}%WIN_ARCH%"
+!error "Undefined environment variable: WIN_ARCH"
+!endif
+
 !define APP_NAME "CGHAssemble"
 !define APP_DESC "A stupid Assemble tool."
 !define APP_VER "1.0.1.0"
@@ -7,7 +14,7 @@
 
 Name "${APP_NAME}"
 BRANDINGTEXT "${APP_NAME} ${APP_VER}"
-OutFile "${APP_NAME}-setup.exe"
+OutFile "${APP_NAME}-${APP_VER}-win${WIN_ARCH}-setup.exe"
 
 VIProductVersion "${APP_VER}"
 VIAddVersionKey /LANG=1033 "ProductName" "${APP_NAME}"
