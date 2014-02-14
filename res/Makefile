@@ -1,11 +1,16 @@
 FILE=hammer
 SET=$(FILE).iconset
+CGHA=CGHAssemble
 
 all:
-	@echo "This is a Makefile to generate .icns in Mac OS X."
-	@echo "make clean                 - to remove any generated files"
-	@echo "make iconset icns          - to make .icns"
-	@echo "make iconset optimize icns - if you have ImageOptim installed"
+	@echo "This is a Makefile to generate icons.\n"
+	@echo "  make clean                 - to remove any generated files"
+	@echo "\nOn Mac OS X:\n"
+	@echo "  make iconset icns          - to make .icns"
+	@echo "  make iconset optimize icns - if you have ImageOptim installed"
+	@echo "\nOn Linux:\n"
+	@echo "  make icons                 - to make icons in different sizes"
+	@echo "  make icons pngcrush        - if you have pngcrush installed"
 
 clean:
 	rm -rf "$(SET)" "$(FILE).icns"
@@ -29,5 +34,19 @@ optimize:
 
 icns:
 	iconutil -c icns "$(SET)"
+
+icons:
+	for size in 16x16 32x32 48x48 128x128 256x256; do \
+	mkdir -p "hicolor/$$size/apps"; \
+	convert "$(FILE).png" -resize $$size! \
+	"hicolor/$$size/apps/$(CGHA).png"; \
+	done
+
+pngcrush:
+	find hicolor -name "*.png" -exec pngcrush -rem cHRM -rem gAMA -rem iCCP \
+	-rem sRGB -q {} {}.new \;
+	for file in $$(find hicolor -name "*.png.new"); do \
+	mv $$file $${file%.*}; \
+	done
 
 .PHONY: clean iconset optimize icns
