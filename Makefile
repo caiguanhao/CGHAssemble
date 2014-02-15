@@ -4,14 +4,6 @@ repo=maijie
 __USER_REPO__=$(user)/$(repo)
 __USER_REPO_NAME__=$(user)-$(repo)
 
-APP_NAME=CGHAssemble ($(__USER_REPO_NAME__))
-APP_ZIP_FILE=CGHAssemble-$(__USER_REPO_NAME__)-$(__VERSION__)-MacOSX.zip
-
-DEB_NAME=cgh-assemble-$(__USER_REPO_NAME__)
-DEB_FILE=$(DEB_NAME)-$(__VERSION__)
-
-NODE_MODULES=npm grunt-cli
-
 ifeq ($(OS), Windows_NT)
 	ifeq ($(PROCESSOR_ARCHITEW6432), AMD64)
 		ARCH="64bit"
@@ -44,6 +36,16 @@ else
 endif
 
 BIT=$(subst bit,,$(ARCH))
+
+APP_NAME=CGHAssemble ($(__USER_REPO_NAME__))
+APP_ZIP_FILE=CGHAssemble-$(__USER_REPO_NAME__)-$(__VERSION__)-MacOSX.zip
+
+DEB_NAME=cgh-assemble-$(__USER_REPO_NAME__)
+DEB_FILE=$(DEB_NAME)-$(__VERSION__)
+
+SETUP_EXE=CGHAssemble-$(__USER_REPO_NAME__)-$(__VERSION__)-win$(BIT)-setup.exe
+
+NODE_MODULES=npm grunt-cli
 
 export DEBFULLNAME=Choi Goon-ho
 export DEBEMAIL=caiguanhao@gmail.com
@@ -106,7 +108,16 @@ dist:
 installer:
 	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
 	echo "Start building installer in 2 seconds..." && sleep 2; \
-	WIN_ARCH=$(BIT) makensis install.nsi; \
+	mv "dist/CGHAssemble" "dist/$(APP_NAME)"; \
+	sed -i".bak" \
+	-e "s#{{APP_NAME}}#$(APP_NAME)#g" \
+	-e "s#{{ARCH}}#$(BIT)#g" \
+	-e "s#{{PACKAGE}}#$(__USER_REPO_NAME__)#g" \
+	-e "s#{{FILENAME}}#$(SETUP_EXE)#g" \
+	-e "s#{{VERSION}}#$(__VERSION__)#g" \
+	"install.nsi"; \
+	makensis install.nsi; \
+	mv install.nsi.bak install.nsi; \
 	fi
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	rm -f "dist/$(APP_ZIP_FILE)"; \
@@ -148,7 +159,7 @@ deb:
 hash:
 	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
 	(echo "import hashlib"; \
-	 echo "file = '`find . -name "*-setup.exe" | head -n 1`'"; \
+	 echo "file = 'dist/$(SETUP_EXE)'"; \
 	 echo "def hash(m):"; \
 	 echo "  return getattr(hashlib, m)(open(file, 'rb').read()).hexdigest()"; \
 	 echo "print '  checksums of', file"; \

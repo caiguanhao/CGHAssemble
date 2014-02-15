@@ -1,20 +1,20 @@
 !include "MUI2.nsh"
 
-!define WIN_ARCH $%WIN_ARCH%
-!define DOLLAR "$"
+# these constants will be replaced by `make`
+!define APP_NAME "{{APP_NAME}}"
+!define ARCH "{{ARCH}}"
+!define PACKAGE "{{PACKAGE}}"
+!define FILENAME "{{FILENAME}}"
+!define VERSION "{{VERSION}}"
 
-!if ${WIN_ARCH} == "${DOLLAR}%WIN_ARCH%"
-!error "Undefined environment variable: WIN_ARCH"
-!endif
-
-!define APP_NAME "CGHAssemble"
+!define APP_EXE "CGHAssemble.exe"
 !define APP_DESC "A stupid Assemble tool."
-!define APP_VER "1.0.2.0"
+!define APP_VER "${VERSION}"
 !define APP_AUTHOR "caiguanhao"
 
 Name "${APP_NAME}"
 BRANDINGTEXT "${APP_NAME} ${APP_VER}"
-OutFile "${APP_NAME}-${APP_VER}-win${WIN_ARCH}-setup.exe"
+OutFile "dist/${FILENAME}"
 
 VIProductVersion "${APP_VER}"
 VIAddVersionKey /LANG=1033 "ProductName" "${APP_NAME}"
@@ -61,12 +61,12 @@ Section "Program Files" SecProgramFiles
   SectionIn RO
   SetOutPath "$INSTDIR"
   File /r "dist\${APP_NAME}\*"
-  CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME}.exe" ""
+  CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_EXE}" ""
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
   CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall ${APP_NAME}.lnk" \
     "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" \
-    "$INSTDIR\${APP_NAME}.exe" "" "$INSTDIR\${APP_NAME}.exe" 0
+    "$INSTDIR\${APP_EXE}" "" "$INSTDIR\${APP_EXE}" 0
   WriteRegStr HKLM "Software\${APP_NAME}" "" $INSTDIR
   WriteRegStr HKLM \
     "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
