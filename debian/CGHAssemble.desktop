@@ -1,10 +1,10 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=CGHAssemble
+Name=CGHAssemble ({{REPO}})
 GenericName=Assemble Tool
 Comment=A stupid Assemble tool.
 Exec=/opt/CGHAssemble/CGHAssemble
 Terminal=false
-Icon=CGHAssemble
+Icon={{PACKAGE}}
 Categories=Development;Utility;

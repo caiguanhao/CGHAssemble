@@ -1,4 +1,4 @@
-Source: cghassemble
+Source: {{PACKAGE}}
 Section: utils
 Priority: standard
 Maintainer: Choi Goon-ho <caiguanhao@gmail.com>
@@ -7,7 +7,7 @@ Standards-Version: 3.8.3
 Bugs: https://github.com/caiguanhao/CGHAssemble/issues
 Homepage: https://github.com/caiguanhao/CGHAssemble
 
-Package: cghassemble
+Package: {{PACKAGE}}
 Architecture: {{ARCH}}
 Depends: libc6 (>= 2.11)
 Description: A stupid Assemble tool.

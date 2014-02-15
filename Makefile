@@ -1,8 +1,13 @@
-__VERSION__="1.0.2.0"
+__VERSION__=1.0.2.0
+__USER__=choigoonho
+__REPO__=maijie
+__USER_REPO__=$(__USER__)/$(__REPO__)
+__USER_REPO_NAME__=$(__USER__)-$(__REPO__)
 
 MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
 
-DEB_NAME=cghassemble-$(__VERSION__)
+DEB_NAME=cgh-assemble-$(__USER_REPO_NAME__)
+DEB_FILE=$(DEB_NAME)-$(__VERSION__)
 
 NODE_MODULES=npm grunt-cli
 
@@ -84,24 +89,31 @@ installer:
 	fi
 
 deb:
-	rm -rf dist/$(DEB_NAME)*
-	cp -rf dist/CGHAssemble dist/$(DEB_NAME)
-	(cd dist/$(DEB_NAME) && find * -type f -exec echo {} \
-	opt/CGHAssemble/{} \; | sed 's/\(.*\)\/.*/\1/g' > ../../debian/install)
+	rm -rf dist/$(DEB_FILE)*
+	cp -rf dist/CGHAssemble dist/$(DEB_FILE)
+	(cd dist/$(DEB_FILE) && find * -type f -exec echo {} \
+	opt/$(DEB_NAME)/{} \; | sed 's/\(.*\)\/.*/\1/g' > ../../debian/install)
 
-	cp debian/CGHAssemble.desktop dist/$(DEB_NAME)
-	echo "CGHAssemble.desktop usr/share/applications" >> debian/install
+	sed \
+	-e "s#{{PACKAGE}}#$(DEB_NAME)#" \
+	-e "s#{{REPO}}#$(__USER_REPO__)#" \
+	debian/CGHAssemble.desktop > dist/$(DEB_FILE)/$(DEB_NAME).desktop
+	echo "$(DEB_NAME).desktop usr/share/applications" >> debian/install
 
-	cp -r res/hicolor dist/$(DEB_NAME)
-	(cd dist/$(DEB_NAME) && find hicolor -type f -exec \
-	echo {} usr/share/icons/{} \;  | sed 's/\(.*\)\/.*/\1/g') >> debian/install
+	for icon in $$(cd res && find hicolor -name "*.png"); do \
+	mkdir -p dist/$(DEB_FILE)/$${icon%/*}; \
+	cp res/$$icon dist/$(DEB_FILE)/$${icon%/*}/$(DEB_NAME).png; \
+	echo "$${icon%/*}/$(DEB_NAME).png usr/share/icons/$${icon%/*}" >> debian/install; \
+	done
 
-	(cd dist/$(DEB_NAME) && echo | dh_make --single --createorig)
-	mv debian/install dist/$(DEB_NAME)/debian/install
-	sed "s/{{ARCH}}/$$(dpkg --print-architecture)/" debian/control \
-	> dist/$(DEB_NAME)/debian/control
-	cp debian/rules   dist/$(DEB_NAME)/debian/rules
-	(cd dist/$(DEB_NAME) && debuild --no-lintian -us -uc)
+	(cd dist/$(DEB_FILE) && echo | dh_make --single --createorig)
+	mv debian/install dist/$(DEB_FILE)/debian/install
+	sed \
+	-e "s/{{PACKAGE}}/$(DEB_NAME)/" \
+	-e "s/{{ARCH}}/$$(dpkg --print-architecture)/" \
+	debian/control > dist/$(DEB_FILE)/debian/control
+	cp debian/rules   dist/$(DEB_FILE)/debian/rules
+	(cd dist/$(DEB_FILE) && debuild --no-lintian -us -uc)
 
 hash:
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
