@@ -48,6 +48,9 @@ BIT=$(subst bit,,$(ARCH))
 export DEBFULLNAME=Choi Goon-ho
 export DEBEMAIL=caiguanhao@gmail.com
 
+NODE_SHASUM=$(shell python -sBc "import hashlib;\
+print hashlib.sha1(open('$(NODE)','rb').read()).hexdigest()")
+
 all:
 	@if [ ! -z "$(version)" ]; then \
 	echo Current Version: $(__VERSION__); \
@@ -67,7 +70,7 @@ all:
 	sed -i".bak" \
 	-e "s#{{USER}}#$(user)#g" \
 	-e "s#{{REPO}}#$(repo)#g" \
-	-e "s#{{NODE_SHASUM}}#$$(shasum $(NODE) | cut -c 1-40)#g" \
+	-e "s#{{NODE_SHASUM}}#$(NODE_SHASUM)#g" \
 	"$${file}"; \
 	echo "Updated $${file}"; \
 	done; \
@@ -102,6 +105,7 @@ dist:
 
 installer:
 	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
+	echo "Start building installer in 2 seconds..." && sleep 2; \
 	WIN_ARCH=$(BIT) makensis install.nsi; \
 	fi
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
@@ -142,6 +146,16 @@ deb:
 	(cd dist/$(DEB_FILE) && debuild --no-lintian -us -uc)
 
 hash:
+	@if [ "$(SYSTEM)" = "WINDOWS" ]; then \
+	(echo "import hashlib"; \
+	 echo "file = '`find . -name "*-setup.exe" | head -n 1`'"; \
+	 echo "def hash(m):"; \
+	 echo "  return getattr(hashlib, m)(open(file, 'rb').read()).hexdigest()"; \
+	 echo "print '  checksums of', file"; \
+	 echo "print '  shasum: \"%s\"' % hash('sha1')"; \
+	 echo "print '  md5sum: \"%s\"' % hash('md5')"; \
+	) | python; \
+	fi
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	echo "  shasum: \"$$(shasum dist/$(APP_ZIP_FILE) | cut -c 1-40)\""; \
 	echo "  md5sum: \"$$(md5 -q dist/$(APP_ZIP_FILE))\""; \
