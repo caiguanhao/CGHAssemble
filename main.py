@@ -161,6 +161,7 @@ class MainWindow(QMainWindow):
 
   def setup_ui(self):
     self.buttons = []
+    self.buttons_all_frozen = False;
 
     grid = QGridLayout()
 
@@ -234,7 +235,8 @@ class MainWindow(QMainWindow):
     credits.setAlignment(Qt.AlignHCenter)
     credits.setText('Created by caiguanhao. View source and docs or report' +
       ' issues on <a href="https://github.com/caiguanhao/CGHAssemble">' +
-      'GitHub</a>. <a href="#' + tr('lang-zh') + '">' + tr('Chinese') + '</a>')
+      'GitHub</a>. <a href="setlang:' + tr('lang-zh') + '">' + tr('Chinese') +
+      '</a>')
     credits.linkActivated.connect(self.credits_clicked)
     button_grid.addWidget(credits, 1, 0, 1, 4)
 
@@ -252,8 +254,12 @@ class MainWindow(QMainWindow):
       pass
 
   def credits_clicked(self, url):
-    if url[:6] == '#lang-':
-      SETTINGS.setValue('lang', url[6:])
+    if url[:8] == 'setlang:':
+      if self.buttons_all_frozen:
+        self.warn(tr("Changing the language will break current task. " +
+          "Please try again once current task completes."));
+        return
+      SETTINGS.setValue('lang', url[13:])
       app.exit(REBOOT_CODE)
       return
     QDesktopServices.openUrl(QUrl(url))
@@ -308,10 +314,12 @@ class MainWindow(QMainWindow):
   def freeze_buttons(self):
     for index, button in enumerate(self.buttons):
       button.setEnabled(False)
+    self.buttons_all_frozen = True
 
   def unfreeze_buttons(self):
     for index, button in enumerate(self.buttons):
       button.setEnabled(True)
+    self.buttons_all_frozen = False
 
   def clone_begin(self):
     self.console_append(tr('Connecting...'))
