@@ -17,7 +17,7 @@ from dulwich.client import get_transport_and_path
 
 from ansi2html import Ansi2HTMLConverter
 
-remote_repository = 'https://github.com/choigoonho/maijie.git'
+remote_repository = 'https://github.com/{{USER}}/{{REPO}}.git'
 
 if getattr(sys, 'frozen', False):
   basedir = sys._MEIPASS # PyInstaller path

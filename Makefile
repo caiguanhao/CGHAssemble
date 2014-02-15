@@ -1,8 +1,8 @@
 __VERSION__=1.0.2.0
-__USER__=choigoonho
-__REPO__=maijie
-__USER_REPO__=$(__USER__)/$(__REPO__)
-__USER_REPO_NAME__=$(__USER__)-$(__REPO__)
+user=choigoonho
+repo=maijie
+__USER_REPO__=$(user)/$(repo)
+__USER_REPO_NAME__=$(user)-$(repo)
 
 MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
 
@@ -55,8 +55,28 @@ all:
 	done; \
 	echo Current Version: $(version); \
 	else \
-	make clean CleanNodeModules dist installer hash; \
+	echo Start building with these info in 2 seconds...; \
+	echo user = $(user); \
+	echo repo = $(repo); \
+	sleep 2; \
+	make revert_main_py; \
+	for file in "main.py"; do \
+	sed -i".bak" \
+	-e "s#{{USER}}#$(user)#g" \
+	-e "s#{{REPO}}#$(repo)#g" \
+	"$${file}"; \
+	echo "Updated $${file}"; \
+	done; \
+	make clean CleanNodeModules dist installer hash finish; \
 	fi
+
+revert_main_py:
+	@if [ -f "main.py.bak" ]; then \
+	mv "main.py.bak" "main.py"; \
+	fi
+
+finish:
+	make revert_main_py
 
 clean:
 	rm -rf build dist
@@ -154,4 +174,4 @@ CleanNodeModules:
 	rm -rf npm/html
 	du -sh $(NODE_MODULES)
 
-.PHONY: all clean dist installer hash version CleanNodeModules
+.PHONY: all clean dist installer hash version CleanNodeModules revert_main_py finish
