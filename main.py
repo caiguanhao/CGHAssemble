@@ -350,10 +350,7 @@ class MainWindow(QMainWindow):
       self.console_append(tr('All packages have been successfully installed.'))
 
   def install_clicked(self):
-    if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
-      QMessageBox.warning(self, "Error", tr("The package.json file is not " +
-        "found in local directory. Nothing to install."))
-      return
+    if self.validate_packages() is not True: return
     self.console_clear()
     node = Node(self, self.local_dir, [ NPM, "install" ])
     node.progress.connect(self.console_append)
@@ -414,12 +411,18 @@ class MainWindow(QMainWindow):
       self.preview_process = node
 
   def validate_packages(self):
+    if not os.path.isfile(NPM):
+      return self.warn(tr("NPM is missing. " +
+        "You may need to re-install this software."))
+    if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
+      return self.warn(tr("The package.json file is not " +
+        "found in local directory. Nothing to do."))
     if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
       return self.warn(tr("The Gruntfile.js file is not found in local " +
         "directory. Nothing to preview."))
     if not os.path.isfile(GRUNT):
       return self.warn(tr("Grunt is missing. " +
-        "You may need to re-install the app."))
+        "You may need to re-install this software."))
     if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
       return self.warn(tr("Grunt is not installed in node_modules directory. " +
         "Please click Install button first."))
