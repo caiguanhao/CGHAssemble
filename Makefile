@@ -4,7 +4,8 @@ repo=maijie
 __USER_REPO__=$(user)/$(repo)
 __USER_REPO_NAME__=$(user)-$(repo)
 
-MAC_APP_ZIP_FILE_NAME=CGHAssemble-MacOSX.zip
+APP_NAME=CGHAssemble ($(__USER_REPO_NAME__))
+APP_ZIP_FILE=CGHAssemble-$(__USER_REPO_NAME__)-$(__VERSION__)-MacOSX.zip
 
 DEB_NAME=cgh-assemble-$(__USER_REPO_NAME__)
 DEB_FILE=$(DEB_NAME)-$(__VERSION__)
@@ -67,7 +68,7 @@ all:
 	"$${file}"; \
 	echo "Updated $${file}"; \
 	done; \
-	make clean CleanNodeModules dist installer hash finish; \
+	make clean CleanNodeModules dist installer finish hash; \
 	fi
 
 revert_main_py:
@@ -101,8 +102,9 @@ installer:
 	WIN_ARCH=$(BIT) makensis install.nsi; \
 	fi
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
-	rm -f $(MAC_APP_ZIP_FILE_NAME); \
-	cd dist && zip ../$(MAC_APP_ZIP_FILE_NAME) -r CGHAssemble.app; \
+	rm -f "dist/$(APP_ZIP_FILE)"; \
+	mv "dist/CGHAssemble.app" "dist/$(APP_NAME).app"; \
+	cd dist && zip "$(APP_ZIP_FILE)" -r "$(APP_NAME).app"; \
 	fi
 	@if [ "$(SYSTEM)" = "LINUX" ]; then \
 	make deb; \
@@ -138,8 +140,8 @@ deb:
 
 hash:
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
-	echo "  shasum: \"$$(shasum $(MAC_APP_ZIP_FILE_NAME) | cut -c 1-40)\""; \
-	echo "  md5sum: \"$$(md5 -q $(MAC_APP_ZIP_FILE_NAME))\""; \
+	echo "  shasum: \"$$(shasum dist/$(APP_ZIP_FILE) | cut -c 1-40)\""; \
+	echo "  md5sum: \"$$(md5 -q dist/$(APP_ZIP_FILE))\""; \
 	fi
 	@if [ "$(SYSTEM)" = "LINUX" ]; then \
 	echo "  shasum: \"$$(shasum dist/*.deb | cut -c 1-40)\""; \
