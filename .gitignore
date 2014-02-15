@@ -10,3 +10,4 @@ dist
 *.ini
 *.iconset
 *.icns
+res/hicolor
