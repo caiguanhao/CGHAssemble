@@ -4,7 +4,7 @@ repo=maijie
 __USER_REPO__=$(user)/$(repo)
 __USER_REPO_NAME__=$(user)-$(repo)
 
-MAC_APP_ZIP_FILE_NAME="CGHAssemble-MacOSX.zip"
+MAC_APP_ZIP_FILE_NAME=CGHAssemble-MacOSX.zip
 
 DEB_NAME=cgh-assemble-$(__USER_REPO_NAME__)
 DEB_FILE=$(DEB_NAME)-$(__VERSION__)
@@ -123,7 +123,8 @@ deb:
 	for icon in $$(cd res && find hicolor -name "*.png"); do \
 	mkdir -p dist/$(DEB_FILE)/$${icon%/*}; \
 	cp res/$$icon dist/$(DEB_FILE)/$${icon%/*}/$(DEB_NAME).png; \
-	echo "$${icon%/*}/$(DEB_NAME).png usr/share/icons/$${icon%/*}" >> debian/install; \
+	echo "$${icon%/*}/$(DEB_NAME).png usr/share/icons/$${icon%/*}" \
+	>> debian/install; \
 	done
 
 	(cd dist/$(DEB_FILE) && echo | dh_make --single --createorig)
@@ -139,6 +140,10 @@ hash:
 	@if [ "$(SYSTEM)" = "MAC" ]; then \
 	echo "  shasum: \"$$(shasum $(MAC_APP_ZIP_FILE_NAME) | cut -c 1-40)\""; \
 	echo "  md5sum: \"$$(md5 -q $(MAC_APP_ZIP_FILE_NAME))\""; \
+	fi
+	@if [ "$(SYSTEM)" = "LINUX" ]; then \
+	echo "  shasum: \"$$(shasum dist/*.deb | cut -c 1-40)\""; \
+	echo "  md5sum: \"$$(md5sum dist/*.deb | cut -c 1-32)\""; \
 	fi
 
 version:
@@ -174,4 +179,5 @@ CleanNodeModules:
 	rm -rf npm/html
 	du -sh $(NODE_MODULES)
 
-.PHONY: all clean dist installer hash version CleanNodeModules revert_main_py finish
+.PHONY: all clean dist installer hash version CleanNodeModules \
+	revert_main_py finish
