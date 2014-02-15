@@ -362,11 +362,17 @@ class MainWindow(QMainWindow):
     node.finish.connect(self.install_finish)
     node.start()
 
+  preview_timer = None
+
   def preview_begin(self):
     self.previewing = False
     self.preview.setText(tr('Processing...'))
     self.freeze_buttons()
-    QTimer.singleShot(5000, self.preview_previewing)
+    self.preview_timer = QTimer(self)
+    self.preview_timer.setInterval(5000)
+    self.preview_timer.setSingleShot(True)
+    self.preview_timer.timeout.connect(self.preview_previewing)
+    self.preview_timer.start()
 
   def preview_previewing(self):
     self.previewing = True
@@ -377,6 +383,10 @@ class MainWindow(QMainWindow):
     self.previewing = False
     self.preview.setText(tr('Preview'))
     self.unfreeze_buttons()
+    try:
+      self.preview_timer.stop()
+    except:
+      pass
 
   def preview_closed(self):
     self.console_append(tr('Preview is now closed.'))
@@ -388,19 +398,12 @@ class MainWindow(QMainWindow):
         self.preview_process.finish.disconnect(self.preview_finish);
         self.freeze_buttons()
         self.preview_process.process.kill()
+      except:
+        pass
+      finally:
         QTimer.singleShot(1000, self.preview_closed)
-      except Exception as error:
-        self.console_append(error)
     else:
-      if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-        self.warn(tr("The Gruntfile.js file is not found in local directory. " +
-          "Nothing to preview."))
-        return
-      if not os.path.isdir(os.path.join(self.local_dir, 'node_modules',
-        'grunt')):
-        self.warn(tr("Grunt is not installed in node_modules directory. " +
-          "Please click Install button first."))
-        return
+      if self.validate_packages() is not True: return
       self.console_clear()
       node = Node(self, self.local_dir, [ GRUNT ])
       node.progress.connect(self.console_append)
@@ -409,6 +412,18 @@ class MainWindow(QMainWindow):
       node.finish.connect(self.preview_finish)
       node.start()
       self.preview_process = node
+
+  def validate_packages(self):
+    if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
+      return self.warn(tr("The Gruntfile.js file is not found in local " +
+        "directory. Nothing to preview."))
+    if not os.path.isfile(GRUNT):
+      return self.warn(tr("Grunt is missing. " +
+        "You may need to re-install the app."))
+    if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
+      return self.warn(tr("Grunt is not installed in node_modules directory. " +
+        "Please click Install button first."))
+    return True
 
   def assemble_begin(self):
     self.assemble.setText(tr('Processing...'))
@@ -419,14 +434,7 @@ class MainWindow(QMainWindow):
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
-    if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
-      self.warn(tr("The Gruntfile.js file is not found in local directory. " +
-        "Nothing to assemble."))
-      return
-    if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
-      self.warn(tr("Grunt is not installed in node_modules directory. " +
-        "Please click Install button first."))
-      return
+    if self.validate_packages() is not True: return
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
     node.progress.connect(self.console_append)
