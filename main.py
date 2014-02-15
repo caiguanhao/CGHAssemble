@@ -17,7 +17,14 @@ from dulwich.client import get_transport_and_path
 
 from ansi2html import Ansi2HTMLConverter
 
-remote_repository = 'https://github.com/{{USER}}/{{REPO}}.git'
+# will be replaced by `make`
+USER = '{{USER}}'
+REPO = '{{REPO}}'
+
+if USER[0] is '{': USER = 'choigoonho'
+if REPO[0] is '{': REPO = 'maijie'
+
+remote_repository = 'https://github.com/%s/%s.git' % (USER, REPO)
 
 if getattr(sys, 'frozen', False):
   basedir = sys._MEIPASS # PyInstaller path
@@ -31,9 +38,11 @@ MAC = PLATFORM == 'Darwin'
 NODE = os.path.join(basedir, "node.exe")
 NPM = os.path.join(basedir, "npm", "cli.js")
 GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
-SETTINGS_FILE = os.path.join(basedir, "settings.ini")
+USER_HOME_DIR = os.path.expanduser('~')
+SETTINGS_FILE = os.path.join(USER_HOME_DIR, '.cgh-assemble-settings')
 
 SETTINGS = QSettings(SETTINGS_FILE, QSettings.IniFormat)
+SETTINGS.beginGroup('%s-%s' % (USER, REPO));
 
 CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
 
@@ -137,7 +146,7 @@ class MainWindow(QMainWindow):
       self.local_dir = str(SETTINGS.value('local_dir').toString())
       if not self.local_dir: raise
     except:
-      self.local_dir = self.path(os.path.expanduser('~'))
+      self.local_dir = self.path(USER_HOME_DIR)
 
     # kill previous launched but not ended node process
     for proc in psutil.process_iter():
