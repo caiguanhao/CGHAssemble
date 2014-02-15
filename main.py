@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
       self.console_append(tr('All packages have been successfully installed.'))
 
   def install_clicked(self):
-    if self.validate_packages() is not True: return
+    if self.validate_node() is not True: return
     self.console_clear()
     node = Node(self, self.local_dir, [ NPM, "install" ])
     node.progress.connect(self.console_append)
@@ -424,7 +424,8 @@ class MainWindow(QMainWindow):
       finally:
         QTimer.singleShot(1000, self.preview_closed)
     else:
-      if self.validate_packages() is not True: return
+      if self.validate_node() is not True: return
+      if self.validate_package() is not True: return
       self.console_clear()
       node = Node(self, self.local_dir, [ GRUNT ])
       node.progress.connect(self.console_append)
@@ -434,7 +435,7 @@ class MainWindow(QMainWindow):
       node.start()
       self.preview_process = node
 
-  def validate_packages(self):
+  def validate_node(self):
     if not NODE or not os.path.isfile(NODE):
       return self.warn(tr("Node.js executable file is missing. " +
         "You may need to re-install this software."))
@@ -450,15 +451,18 @@ class MainWindow(QMainWindow):
     if not os.path.isfile(NPM):
       return self.warn(tr("NPM is missing. " +
         "You may need to re-install this software."))
+    return True
+
+  def validate_package(self):
+    if not os.path.isfile(GRUNT):
+      return self.warn(tr("Grunt is missing. " +
+        "You may need to re-install this software."))
     if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
       return self.warn(tr("The package.json file is not " +
         "found in local directory. Nothing to do."))
     if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
       return self.warn(tr("The Gruntfile.js file is not found in local " +
         "directory. Nothing to preview."))
-    if not os.path.isfile(GRUNT):
-      return self.warn(tr("Grunt is missing. " +
-        "You may need to re-install this software."))
     if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
       return self.warn(tr("Grunt is not installed in node_modules directory. " +
         "Please click Install button first."))
@@ -473,7 +477,8 @@ class MainWindow(QMainWindow):
     self.unfreeze_buttons()
 
   def assemble_clicked(self):
-    if self.validate_packages() is not True: return
+    if self.validate_node() is not True: return
+    if self.validate_package() is not True: return
     self.console_clear()
     node = Node(self, self.local_dir, [ GRUNT, "make" ])
     node.progress.connect(self.console_append)
