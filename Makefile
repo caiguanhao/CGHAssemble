@@ -1,4 +1,4 @@
-__VERSION__=1.0.2.0
+__VERSION__=1.0.3.0
 user=choigoonho
 repo=maijie
 __USER_REPO__=$(user)/$(repo)
