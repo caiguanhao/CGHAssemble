@@ -50,6 +50,8 @@ REBOOT_CODE = 123
 
 QTextCodec.setCodecForTr(QTextCodec.codecForName('utf-8'))
 
+link_style = ' style="text-decoration: none"'
+
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -201,7 +203,7 @@ class MainWindow(QMainWindow):
     self.console = QTextEdit()
     self.console.setReadOnly(True)
     self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }");
+    self.console.setStyleSheet("QTextEdit { background: #FDF6E3 }")
     self.console_append(tr('Ready.'))
     grid.addWidget(self.console, 2, 0, 1, 3)
 
@@ -231,14 +233,16 @@ class MainWindow(QMainWindow):
     credits = QLabel()
     font = QFont()
     font.setPointSize(10)
+    font.setUnderline(False)
     if WINDOWS:
       font.setPointSize(8)
     credits.setFont(font)
     credits.setAlignment(Qt.AlignHCenter)
-    credits.setText('Created by <a href="http://cgh.io/">caiguanhao</a>. ' +
-      'View source and docs or report issues on ' +
-      '<a href="https://github.com/caiguanhao/CGHAssemble">GitHub</a>. ' +
-      '<a href="setlang:' + tr('lang-zh') + '">' + tr('中文') + '</a>')
+    credits.setText('Created by <a href="http://cgh.io/"' + link_style +
+      '>caiguanhao</a>. View source and docs or report issues on ' +
+      '<a href="https://github.com/caiguanhao/CGHAssemble"' + link_style +
+      '>GitHub</a>. <a href="setlang:' + tr('lang-zh') + '"' + link_style +
+      '>' + tr('中文') + '</a>')
     credits.linkActivated.connect(self.credits_clicked)
     button_grid.addWidget(credits, 1, 0, 1, 4)
 
@@ -293,7 +297,8 @@ class MainWindow(QMainWindow):
   def update_label(self, label, text):
     elided_text = QFontMetrics(label.font()).elidedText(text,
       Qt.ElideMiddle, label.width());
-    label.setText('<a href="' + text + '">' + elided_text + '</a>');
+    label.setText('<a href="' + text + '"' + link_style + '>' +
+      elided_text + '</a>');
 
   def update_remote(self):
     self.update_label(self.remote, remote_repository)
