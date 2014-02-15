@@ -25,6 +25,7 @@ ifeq ($(OS), Windows_NT)
 		endif
 	endif
 	SYSTEM="WINDOWS"
+	NODE=node.exe
 else
 	UNAME_S := $(shell uname -s)
 	UNAME_M := $(shell uname -m)
@@ -39,6 +40,7 @@ else
 	ifeq ($(UNAME_S), Darwin)
 		SYSTEM="MAC"
 	endif
+	NODE=node
 endif
 
 BIT=$(subst bit,,$(ARCH))
@@ -65,6 +67,7 @@ all:
 	sed -i".bak" \
 	-e "s#{{USER}}#$(user)#g" \
 	-e "s#{{REPO}}#$(repo)#g" \
+	-e "s#{{NODE_SHASUM}}#$$(shasum $(NODE) | cut -c 1-40)#g" \
 	"$${file}"; \
 	echo "Updated $${file}"; \
 	done; \

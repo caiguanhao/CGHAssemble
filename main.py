@@ -5,6 +5,7 @@ import os
 import sys
 import subprocess
 import platform
+import hashlib
 
 import psutil
 
@@ -20,6 +21,7 @@ from ansi2html import Ansi2HTMLConverter
 # will be replaced by `make`
 USER = '{{USER}}'
 REPO = '{{REPO}}'
+NODE_SHASUM = '{{NODE_SHASUM}}'
 
 if USER[0] is '{': USER = 'choigoonho'
 if REPO[0] is '{': REPO = 'maijie'
@@ -55,6 +57,16 @@ REBOOT_CODE = 123
 QTextCodec.setCodecForTr(QTextCodec.codecForName('utf-8'))
 
 link_style = ' style="text-decoration: none"'
+
+# http://stackoverflow.com/a/3431835
+def shasum(filename, blocksize=65536):
+  sha1 = hashlib.new('sha1')
+  file = open(filename, 'rb')
+  buf = file.read(blocksize)
+  while len(buf) > 0:
+    sha1.update(buf)
+    buf = file.read(blocksize)
+  return sha1.hexdigest()
 
 class Clone(QThread):
   begin = pyqtSignal()
@@ -423,9 +435,18 @@ class MainWindow(QMainWindow):
       self.preview_process = node
 
   def validate_packages(self):
-    if not NODE:
+    if not NODE or not os.path.isfile(NODE):
       return self.warn(tr("Node.js executable file is missing. " +
         "You may need to re-install this software."))
+    else:
+      if NODE_SHASUM[0] is '{':
+        print 'Warning: NODE_SHASUM is empty.'
+      else:
+        try:
+          if shasum(NODE) != NODE_SHASUM: raise None
+        except:
+          return self.warn(tr("Node.js executable file is corrupted. " +
+            "You may need to re-install this software."))
     if not os.path.isfile(NPM):
       return self.warn(tr("NPM is missing. " +
         "You may need to re-install this software."))
