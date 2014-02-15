@@ -159,7 +159,8 @@ class MainWindow(QMainWindow):
     self.resize(width, height)
     self.move((QApplication.desktop().width() - width) / 2, 100)
 
-    self.setWindowTitle(tr('CGHAssemble') + ' ' + VERSION)
+    self.setWindowTitle(tr('CGHAssemble') + ' %s (%s/%s)' %
+      (VERSION, USER, REPO))
     if not MAC:
       self.setWindowIcon(QIcon(os.path.join(basedir, 'res', 'hammer.png')))
     try:
