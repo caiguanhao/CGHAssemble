@@ -48,6 +48,8 @@ CONVERTER = Ansi2HTMLConverter(dark_bg=False, scheme='solarized')
 
 REBOOT_CODE = 123
 
+QTextCodec.setCodecForTr(QTextCodec.codecForName('utf-8'))
+
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -233,10 +235,10 @@ class MainWindow(QMainWindow):
       font.setPointSize(8)
     credits.setFont(font)
     credits.setAlignment(Qt.AlignHCenter)
-    credits.setText('Created by caiguanhao. View source and docs or report' +
-      ' issues on <a href="https://github.com/caiguanhao/CGHAssemble">' +
-      'GitHub</a>. <a href="setlang:' + tr('lang-zh') + '">' + tr('Chinese') +
-      '</a>')
+    credits.setText('Created by <a href="http://cgh.io/">caiguanhao</a>. ' +
+      'View source and docs or report issues on ' +
+      '<a href="https://github.com/caiguanhao/CGHAssemble">GitHub</a>. ' +
+      '<a href="setlang:' + tr('lang-zh') + '">' + tr('中文') + '</a>')
     credits.linkActivated.connect(self.credits_clicked)
     button_grid.addWidget(credits, 1, 0, 1, 4)
 
