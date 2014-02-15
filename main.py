@@ -459,10 +459,10 @@ class MainWindow(QMainWindow):
         "You may need to re-install this software."))
     if not os.path.isfile(os.path.join(self.local_dir, 'package.json')):
       return self.warn(tr("The package.json file is not " +
-        "found in local directory. Nothing to do."))
+        "found in local directory. Please update your repository."))
     if not os.path.isfile(os.path.join(self.local_dir, 'Gruntfile.js')):
       return self.warn(tr("The Gruntfile.js file is not found in local " +
-        "directory. Nothing to preview."))
+        "directory. Please update your repository."))
     if not os.path.isdir(os.path.join(self.local_dir, 'node_modules', 'grunt')):
       return self.warn(tr("Grunt is not installed in node_modules directory. " +
         "Please click Install button first."))
