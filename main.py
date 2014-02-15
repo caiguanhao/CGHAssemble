@@ -35,7 +35,11 @@ PLATFORM = platform.system()
 WINDOWS = PLATFORM == 'Windows'
 MAC = PLATFORM == 'Darwin'
 
-NODE = os.path.join(basedir, "node.exe")
+NODE = None
+if os.path.isfile(os.path.join(basedir, 'node.exe')):
+  NODE = os.path.join(basedir, "node.exe")
+elif os.path.isfile(os.path.join(basedir, 'node')):
+  NODE = os.path.join(basedir, "node")
 NPM = os.path.join(basedir, "npm", "cli.js")
 GRUNT = os.path.join(basedir, "grunt-cli", "bin", "grunt")
 USER_HOME_DIR = os.path.expanduser('~')
@@ -155,7 +159,8 @@ class MainWindow(QMainWindow):
     # kill previous launched but not ended node process
     for proc in psutil.process_iter():
       try:
-        if proc.name == "node.exe" and proc.getcwd().startswith(self.local_dir):
+        if (proc.name == "node" or proc.name == "node.exe") and \
+          proc.getcwd().startswith(self.local_dir):
           proc.kill()
       except:
         pass
@@ -418,6 +423,9 @@ class MainWindow(QMainWindow):
       self.preview_process = node
 
   def validate_packages(self):
+    if not NODE:
+      return self.warn(tr("Node.js executable file is missing. " +
+        "You may need to re-install this software."))
     if not os.path.isfile(NPM):
       return self.warn(tr("NPM is missing. " +
         "You may need to re-install this software."))

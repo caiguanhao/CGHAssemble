@@ -30,20 +30,11 @@ else
   if [ "$UNAME_S" = "Darwin" ]; then
     PLATFORM="darwin"
   fi
-  ARCH="`which arch`"
-  if [ ! -z "$ARCH" ]; then
-    if [ "$(arch)" = "x86_64" ]; then
-      ARCH="x64"
-    else
-      ARCH="x86"
-    fi
+  ARCH="`uname -m`"
+  if [ "$ARCH" = "x86_64" ]; then
+    ARCH="x64"
   else
-    ARCH="`uname -m`"
-    if [ "$ARCH" = "x86_64" ]; then
-      ARCH="x64"
-    else
-      ARCH="x86"
-    fi
+    ARCH="x86"
   fi
 fi
 
@@ -80,15 +71,18 @@ case "$PLATFORM-$ARCH" in
   win-x86)
     NODE_FILE="node.exe"
     NODE_DIST="${NODE_DIST}/${NODE_FILE}"
+    NODE_FILE_NAME="node.exe"
     ;;
   win-x64)
     NODE_FILE="node.exe"
     NODE_DIST="${NODE_DIST}/x64/${NODE_FILE}"
+    NODE_FILE_NAME="node.exe"
     ;;
   linux-x86|linux-x64|darwin-x86|darwin-x64)
     NODE_TAR_GZ="node-${NODE_VER}-${PLATFORM}-${ARCH}.tar.gz"
     NODE_FILE="$NODE_TAR_GZ"
     NODE_DIST="${NODE_DIST}/${NODE_FILE}"
+    NODE_FILE_NAME="node"
     ;;
   *)
     echo "No such platform/architecture."
@@ -101,7 +95,7 @@ if [ -z "$DOWNLOAD" ]; then
   DOWNLOAD="$(which wget) --continue -O temp"
 fi
 
-if [ ! -f "$NODE_FILE" ]; then
+if [ ! -f "$NODE_FILE" ] || [ ! -f "$NODE_FILE_NAME" ]; then
   echo Downloading $NODE_DIST ...
   $DOWNLOAD $NODE_DIST
   mv "temp" "$NODE_FILE"
@@ -110,10 +104,10 @@ fi
 if [ ! -z "$NODE_TAR_GZ" ]; then
 
   echo "Extracting archive..."
-  tar xfvz "$NODE_TAR_GZ" > /dev/null
+  tar xfz "$NODE_TAR_GZ"
 
-  echo "Copying ${NODE_TAR_GZ%.*.*}/bin/node to node.exe..."
-  cp "${NODE_TAR_GZ%.*.*}/bin/node" "node.exe"
+  echo "Copying ${NODE_TAR_GZ%.*.*}/bin/node to $NODE_FILE_NAME..."
+  cp "${NODE_TAR_GZ%.*.*}/bin/node" "$NODE_FILE_NAME"
 
   echo "Remove ${NODE_TAR_GZ%.*.*}..."
   rm -rf "${NODE_TAR_GZ%.*.*}"
@@ -130,7 +124,7 @@ if [ ! -d "npm" ]; then
 fi
 
 if [ ! -d "grunt-cli" ]; then
-  "./node.exe" "npm/cli.js" install grunt-cli
+  "./$NODE_FILE_NAME" "npm/cli.js" install grunt-cli
   mv "node_modules/grunt-cli" .
   rm -rf "node_modules"
 fi

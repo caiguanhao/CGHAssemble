@@ -11,7 +11,7 @@ exe = EXE(pyz,
           strip=None,
           upx=True,
           console=False)
-node = [('node.exe', 'node.exe', 'BINARY')]
+node = [('node', 'node', 'BINARY')]
 npm = Tree('npm', prefix='npm')
 grunt_cli = Tree('grunt-cli', prefix='grunt-cli')
 a.datas += [

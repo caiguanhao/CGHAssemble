@@ -3,6 +3,7 @@ npm
 grunt-cli
 build
 dist
+node
 *.tgz
 *.zip
 *.tar.gz
