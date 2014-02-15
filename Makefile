@@ -98,7 +98,8 @@ deb:
 
 	(cd dist/$(DEB_NAME) && echo | dh_make --single --createorig)
 	mv debian/install dist/$(DEB_NAME)/debian/install
-	cp debian/control dist/$(DEB_NAME)/debian/control
+	sed "s/{{ARCH}}/$$(dpkg --print-architecture)/" debian/control \
+	> dist/$(DEB_NAME)/debian/control
 	cp debian/rules   dist/$(DEB_NAME)/debian/rules
 	(cd dist/$(DEB_NAME) && debuild --no-lintian -us -uc)
 
