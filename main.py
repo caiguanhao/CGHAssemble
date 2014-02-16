@@ -68,6 +68,10 @@ def shasum(filename, blocksize=65536):
     buf = file.read(blocksize)
   return sha1.hexdigest()
 
+def set_window_icon(widget):
+  if not MAC:
+    widget.setWindowIcon(QIcon(os.path.join(basedir, 'res', 'hammer.png')))
+
 class Clone(QThread):
   begin = pyqtSignal()
   finish = pyqtSignal()
@@ -161,8 +165,7 @@ class MainWindow(QMainWindow):
 
     self.setWindowTitle(tr('CGHAssemble') + ' %s (%s/%s)' %
       (VERSION, USER, REPO))
-    if not MAC:
-      self.setWindowIcon(QIcon(os.path.join(basedir, 'res', 'hammer.png')))
+    set_window_icon(self)
     try:
       self.local_dir = str(SETTINGS.value('local_dir').toString())
       if not self.local_dir: raise
@@ -496,10 +499,11 @@ def tr(msg):
 
 def already_running():
   pid = os.getpid()
-  ppid = os.getppid()
+  ppid = os.getppid() if hasattr(os, 'getppid') else -1
   for proc in psutil.process_iter():
     try:
-      if proc.exe == os.path.join(basedir, 'CGHAssemble'):
+      if proc.exe == psutil.Process(pid).exe:
+        if ppid == -1: ppid = proc.ppid
         # print proc.pid, proc.ppid, pid, ppid
         if (proc.pid == pid and proc.ppid == ppid) or (proc.pid == ppid):
           pass
@@ -522,7 +526,9 @@ if __name__ == '__main__':
       app.setFont(font)
 
     if already_running():
-      QMessageBox.warning(None, tr("Error"), tr("CGHAssemble is already " +
+      widget = QWidget()
+      set_window_icon(widget)
+      QMessageBox.warning(widget, tr("Error"), tr("CGHAssemble is already " +
         "running."))
       return_code = 1
       break
