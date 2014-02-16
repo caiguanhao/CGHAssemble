@@ -494,6 +494,21 @@ class MainWindow(QMainWindow):
 def tr(msg):
   return QCoreApplication.translate("@default", msg)
 
+def already_running():
+  pid = os.getpid()
+  ppid = os.getppid()
+  for proc in psutil.process_iter():
+    try:
+      if proc.exe == os.path.join(basedir, 'CGHAssemble'):
+        # print proc.pid, proc.ppid, pid, ppid
+        if (proc.pid == pid and proc.ppid == ppid) or (proc.pid == ppid):
+          pass
+        else:
+          return True
+    except:
+      pass
+  return False
+
 if __name__ == '__main__':
 
   while True:
@@ -505,6 +520,12 @@ if __name__ == '__main__':
       font = QFont()
       font.setFamily('Verdana')
       app.setFont(font)
+
+    if already_running():
+      QMessageBox.warning(None, tr("Error"), tr("CGHAssemble is already " +
+        "running."))
+      return_code = 1
+      break
 
     try:
       lang = str(SETTINGS.value('lang').toString())
