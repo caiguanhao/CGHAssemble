@@ -184,6 +184,10 @@ class MainWindow(QMainWindow):
     self.previewing = False
     self.setup_ui()
 
+  def resizeEvent(self, event):
+    self.update_remote()
+    self.update_local()
+
   def setup_ui(self):
     self.buttons = []
     self.buttons_all_frozen = False;
@@ -197,9 +201,11 @@ class MainWindow(QMainWindow):
     grid.addWidget(source, 0, 0)
 
     self.remote = QLabel()
+    self.remote.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
     self.remote.setOpenExternalLinks(True)
     grid.addWidget(self.remote, 0, 1)
-    self.update_remote()
+    # let the label to elide text on start:
+    QTimer.singleShot(1, lambda: self.update_remote())
 
     self.copy_remote = QPushButton(tr('Copy'))
     self.copy_remote.clicked.connect(self.to_copy_remote)
@@ -211,9 +217,11 @@ class MainWindow(QMainWindow):
     grid.addWidget(dest, 1, 0)
 
     self.local = QLabel()
+    self.local.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
     self.local.linkActivated.connect(self.local_clicked)
     grid.addWidget(self.local, 1, 1)
-    self.update_local()
+    # let the label to elide text on start:
+    QTimer.singleShot(1, lambda: self.update_local())
 
     select_local = QPushButton(tr('Browse...'))
     select_local.clicked.connect(self.browse_folder)
