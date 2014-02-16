@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-VERSION = "1.0.3.0"
+VERSION = "1.0.4.0"
 
 import os
 import sys

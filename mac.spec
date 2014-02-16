@@ -28,5 +28,5 @@ bundle = BUNDLE(exe,
                   'LSBackgroundOnly': '0'
                 },
                 icon='res/hammer.icns',
-                version='1.0.3.0',
+                version='1.0.4.0',
                 name='CGHAssemble.app')
