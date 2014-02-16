@@ -533,14 +533,6 @@ if __name__ == '__main__':
       font.setFamily('Verdana')
       app.setFont(font)
 
-    if already_running():
-      widget = QWidget()
-      set_window_icon(widget)
-      QMessageBox.warning(widget, tr("Error"), tr("CGHAssemble is already " +
-        "running."))
-      return_code = 1
-      break
-
     try:
       lang = str(SETTINGS.value('lang').toString())
       translator = QTranslator()
@@ -548,6 +540,14 @@ if __name__ == '__main__':
       app.installTranslator(translator)
     except:
       pass
+
+    if already_running():
+      widget = QWidget()
+      set_window_icon(widget)
+      QMessageBox.warning(widget, tr("Error"), tr("CGHAssemble is already " +
+        "running."))
+      return_code = 1
+      break
 
     main = MainWindow()
     main.show()
