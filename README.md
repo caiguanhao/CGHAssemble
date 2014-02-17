@@ -21,6 +21,13 @@ both normal and high DPI/retina screen.
 This app bundles with npm, grunt-cli and latest stable version of
 platform-specific Node.js binary.
 
+Screenshots
+-----------
+
+![mac](https://f.cloud.github.com/assets/1284703/2184733/6df8363e-97c6-11e3-87f4-41ced658d7b5.png)
+
+[More...](https://github.com/caiguanhao/CGHAssemble/issues/1)
+
 Conventions
 -----------
 
