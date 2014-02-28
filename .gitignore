@@ -1,6 +1,7 @@
 node_modules
 npm
 grunt-cli
+uglify-js
 build
 dist
 node

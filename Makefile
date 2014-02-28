@@ -210,11 +210,18 @@ CleanNodeModules:
 	du -sh $(NODE_MODULES)
 
 UglifyJS:
-	du -sh $(NODE_MODULES)
+	@if [ ! -f "./$(NODE)" ]; then \
+	echo "Local node is not found. Run ./configure first."; \
+	exit 1; \
+	fi
+	@if [ ! -f "./uglify-js/bin/uglifyjs" ]; then \
+	echo "Local uglify-js is not found. Run ./configure first."; \
+	exit 1; \
+	fi
 	@for f in `find $(NODE_MODULES) -name "*.js"`; \
 	do \
 	echo "[ Uglifying ] $$f"; \
-	uglifyjs $$f > $$f.minifiedjs 2>/dev/null; \
+	./$(NODE) "./uglify-js/bin/uglifyjs" $$f > $$f.minifiedjs 2>/dev/null; \
 	if [ ! -s "$$f.minifiedjs" ]; then \
 	echo "[  Warning  ] It seems $$f cannot be uglified. Skipped."; \
 	fi; \
@@ -227,7 +234,6 @@ UglifyJS:
 	rm -f $$f; \
 	fi; \
 	done
-	du -sh $(NODE_MODULES)
 
 .PHONY: all clean dist installer hash version CleanNodeModules UglifyJS \
 	revert_main_py finish

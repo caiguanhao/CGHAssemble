@@ -11,6 +11,8 @@ NPM_DIST="http://nodejs.org/dist/npm/${NPM_FILE}"
 
 GRUNT_CLI_VER="0.1.13"
 
+UGLIFY_JS_VER="2.4.12"
+
 if [ "$OS" = "Windows_NT" ]; then
   PLATFORM="win"
   if [ "$PROCESSOR_ARCHITEW6432" = "AMD64" ]; then
@@ -128,6 +130,12 @@ fi
 if [ ! -d "grunt-cli" ]; then
   "./$NODE_FILE_NAME" "npm/cli.js" install grunt-cli@$GRUNT_CLI_VER
   mv "node_modules/grunt-cli" .
+  rm -rf "node_modules"
+fi
+
+if [ ! -d "uglify-js" ]; then
+  "./$NODE_FILE_NAME" "npm/cli.js" install uglify-js@$UGLIFY_JS_VER
+  mv "node_modules/uglify-js" .
   rm -rf "node_modules"
 fi
 
