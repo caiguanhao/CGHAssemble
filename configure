@@ -2,12 +2,14 @@
 
 set +e
 
-NODE_VER="v0.10.25"
+NODE_VER="v0.10.26"
 NODE_DIST="http://nodejs.org/dist/${NODE_VER}"
 
-NPM_VER="1.3.25"
+NPM_VER="1.4.3"
 NPM_FILE="npm-${NPM_VER}.tgz"
 NPM_DIST="http://nodejs.org/dist/npm/${NPM_FILE}"
+
+GRUNT_CLI_VER="0.1.13"
 
 if [ "$OS" = "Windows_NT" ]; then
   PLATFORM="win"
@@ -124,7 +126,7 @@ if [ ! -d "npm" ]; then
 fi
 
 if [ ! -d "grunt-cli" ]; then
-  "./$NODE_FILE_NAME" "npm/cli.js" install grunt-cli
+  "./$NODE_FILE_NAME" "npm/cli.js" install grunt-cli@$GRUNT_CLI_VER
   mv "node_modules/grunt-cli" .
   rm -rf "node_modules"
 fi

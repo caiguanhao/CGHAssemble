@@ -37,7 +37,7 @@ Node
 Copyright Joyent, Inc. and other Node
 contributors. All rights reserved.
 
-https://raw.github.com/joyent/node/v0.10.25/LICENSE
+https://raw.github.com/joyent/node/v0.10.26/LICENSE
 
 
 
@@ -48,7 +48,7 @@ reserved.
 
 npm is released under the Artistic License 2.0.
 
-https://github.com/npm/npm/blob/master/LICENSE
+https://raw.github.com/npm/npm/v1.4.3/LICENSE
 
 
 
@@ -56,7 +56,7 @@ grunt
 
 Copyright (c) 2012 Tyler Kellen, contributors
 
-https://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+https://raw.github.com/gruntjs/grunt-cli/v0.1.13/LICENSE-MIT
 
 
 
