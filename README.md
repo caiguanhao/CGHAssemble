@@ -60,6 +60,7 @@ Make
 
 * ``./configure`` to download dependencies.
 * go to ``res`` directory and run ``make`` to generate icons.
+* Optionally run ``make CleanNodeModules UglifyJS`` to compress Node modules.
 * ``make`` to build the app, installer (or zip archive).
 * ``make user=<different-user> repo=<different-repo>`` to build your own.
 * ``make version=<new-version>`` to update the version number.

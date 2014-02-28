@@ -76,7 +76,7 @@ all:
 	"$${file}"; \
 	echo "Updated $${file}"; \
 	done; \
-	make clean CleanNodeModules dist installer finish hash; \
+	make clean dist installer finish hash; \
 	fi
 
 revert_main_py:
@@ -209,5 +209,25 @@ CleanNodeModules:
 	rm -rf npm/html
 	du -sh $(NODE_MODULES)
 
-.PHONY: all clean dist installer hash version CleanNodeModules \
+UglifyJS:
+	du -sh $(NODE_MODULES)
+	@for f in `find $(NODE_MODULES) -name "*.js"`; \
+	do \
+	echo "[ Uglifying ] $$f"; \
+	uglifyjs $$f > $$f.minifiedjs 2>/dev/null; \
+	if [ ! -s "$$f.minifiedjs" ]; then \
+	echo "[  Warning  ] It seems $$f cannot be uglified. Skipped."; \
+	fi; \
+	done
+	@for f in `find $(NODE_MODULES) -name "*.minifiedjs"`; \
+	do \
+	if [ -s $$f ]; then \
+	mv $$f $${f%.*}; \
+	else \
+	rm -f $$f; \
+	fi; \
+	done
+	du -sh $(NODE_MODULES)
+
+.PHONY: all clean dist installer hash version CleanNodeModules UglifyJS \
 	revert_main_py finish
